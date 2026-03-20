@@ -1,0 +1,32 @@
+{
+  "Comment": "ACM DNS validation for ignaracodex.com",
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "_12d8e0f2e079e63c6757fbcc62700af7.ignaracodex.com.",
+        "Type": "CNAME",
+        "TTL": 300,
+        "ResourceRecords": [{ "Value": "_61572d29ff9ad28b3e8c70315802ff74.jkddzztszm.acm-validations.aws." }]
+      }
+    },
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "_1c2f11901cff04639272787f35feb888.www.ignaracodex.com.",
+        "Type": "CNAME",
+        "TTL": 300,
+        "ResourceRecords": [{ "Value": "_7765df974ba810b35300a9e8852ffd4c.jkddzztszm.acm-validations.aws." }]
+      }
+    },
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "_02dcdd595935f0b990905fee0f007c52.api.ignaracodex.com.",
+        "Type": "CNAME",
+        "TTL": 300,
+        "ResourceRecords": [{ "Value": "_7871411c80429756df025a03925c224c.jkddzztszm.acm-validations.aws." }]
+      }
+    }
+  ]
+}

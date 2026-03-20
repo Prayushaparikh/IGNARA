@@ -1,0 +1,58 @@
+/* Dashboard.module.css */
+.page { padding: 40px 48px; max-width: 1200px; }
+.loading { height: 100vh; display: flex; align-items: center; justify-content: center; }
+.spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 3px solid var(--border); border-top-color: var(--teal);
+  animation: spin 0.7s linear infinite; display: block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 36px; gap: 16px; }
+.header h1 { font-size: 32px; letter-spacing: -0.02em; }
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.stat {
+  background: var(--ink-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.statValue { font-size: 28px; font-family: var(--font-display); font-weight: 800; }
+.statLabel { font-size: 12px; color: var(--text-soft); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.radarCard { grid-column: 1; }
+.nextCard  { grid-column: 2; }
+.activityCard { grid-column: 1 / -1; }
+
+.cardTitle { font-size: 16px; margin-bottom: 16px; font-family: var(--font-display); }
+
+.nextBadge { margin-bottom: 10px; }
+.nextTitle { font-size: 22px; font-family: var(--font-display); font-weight: 700; margin-bottom: 10px; }
+.nextReason { color: var(--text-soft); font-size: 14px; margin-bottom: 14px; line-height: 1.6; }
+.nextMeta { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.activityList { display: flex; flex-direction: column; gap: 2px; }
+.activityItem {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: var(--radius);
+  transition: background 0.15s;
+}
+.activityItem:hover { background: var(--ink-3); }
+.passIcon { color: var(--teal); font-weight: 700; width: 20px; text-align: center; }
+.failIcon { color: var(--coral); font-weight: 700; width: 20px; text-align: center; }
+.activityTitle { flex: 1; font-size: 14px; }
+
+@media (max-width: 900px) {
+  .page { padding: 24px 20px; }
+  .statsRow { grid-template-columns: repeat(2, 1fr); }
+  .grid { grid-template-columns: 1fr; }
+  .radarCard, .nextCard, .activityCard { grid-column: 1; }
+}

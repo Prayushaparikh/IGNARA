@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="14" fill="#08080E"/>
+  <g transform="translate(32, 32)">
+    <!-- Outer glow -->
+    <circle cx="0" cy="0" r="24" fill="#F59E0B" opacity="0.07"/>
+    <!-- Diamond outer -->
+    <polygon points="0,-22 13,-5 0,11 -13,-5" fill="#F59E0B" opacity="0.12"/>
+    <!-- Diamond outline -->
+    <polygon points="0,-22 11,-4 0,11 -11,-4" fill="none" stroke="#F59E0B" stroke-width="1.2" opacity="0.7"/>
+    <!-- Flame core -->
+    <polygon points="0,-15 7,-3 0,7 -7,-3" fill="#EF6820" opacity="0.4"/>
+    <!-- Center ember -->
+    <circle cx="0" cy="-1" r="5" fill="#F59E0B"/>
+    <circle cx="0" cy="-1" r="2.5" fill="#FCD34D"/>
+    <!-- Sparks -->
+    <circle cx="-14" cy="-11" r="2"   fill="#F59E0B" opacity="0.75"/>
+    <circle cx="15"  cy="-13" r="1.5" fill="#FCD34D" opacity="0.65"/>
+    <circle cx="11"  cy="8"   r="1.5" fill="#F59E0B" opacity="0.55"/>
+    <circle cx="-12" cy="7"   r="1.8" fill="#EF6820" opacity="0.6"/>
+    <circle cx="3"   cy="-26" r="1.4" fill="#FCD34D" opacity="0.5"/>
+    <!-- Sparkle cross -->
+    <line x1="0" y1="-8"  x2="0" y2="-4"  stroke="#FCD34D" stroke-width="0.9" opacity="0.8"/>
+    <line x1="-2" y1="-6" x2="2" y2="-6"  stroke="#FCD34D" stroke-width="0.9" opacity="0.8"/>
+  </g>
+</svg>

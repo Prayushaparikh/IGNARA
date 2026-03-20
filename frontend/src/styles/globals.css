@@ -1,0 +1,171 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --ink:         #08080E;
+  --ink-1:       #0F0F18;
+  --ink-2:       #16161F;
+  --ink-3:       #1E1E2A;
+  --ink-4:       #252535;
+  --ember:       #F59E0B;
+  --ember-light: #FCD34D;
+  --ember-dark:  #D97706;
+  --ember-glow:  rgba(245, 158, 11, 0.12);
+  --ember-glow-strong: rgba(245, 158, 11, 0.22);
+  --fire:        #EF6820;
+  --fire-glow:   rgba(239, 104, 32, 0.1);
+  --text:        #F5F0E8;
+  --text-soft:   #A89F91;
+  --text-muted:  #6B6358;
+  --cream:       #FFF8F0;
+  --success:     #10B981;
+  --error:       #EF4444;
+  --violet:      #8B5CF6;
+  --violet-glow: rgba(139, 92, 246, 0.12);
+  --border:      rgba(245, 158, 11, 0.12);
+  --border-soft: rgba(255, 255, 255, 0.06);
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-mono:    'DM Mono', monospace;
+  --radius-sm:   6px;
+  --radius:      10px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-full: 9999px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--ink);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--cream);
+  line-height: 1.15;
+}
+
+h1 { font-size: clamp(36px, 6vw, 72px); }
+h2 { font-size: clamp(28px, 4vw, 48px); }
+h3 { font-size: clamp(22px, 3vw, 32px); }
+h4 { font-size: 20px; }
+
+p { color: var(--text-soft); line-height: 1.75; }
+a { color: var(--ember); text-decoration: none; transition: color 0.15s; }
+a:hover { color: var(--ember-light); }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--ink-1); }
+::-webkit-scrollbar-thumb { background: var(--ink-4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ember-dark); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 24px; border-radius: var(--radius);
+  font-family: var(--font-body); font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none; transition: all 0.2s;
+  text-decoration: none; letter-spacing: 0.01em;
+}
+.btn-primary {
+  background: var(--ember); color: var(--ink);
+  box-shadow: 0 0 24px var(--ember-glow-strong);
+}
+.btn-primary:hover {
+  background: var(--ember-light); color: var(--ink);
+  box-shadow: 0 0 40px var(--ember-glow-strong);
+  transform: translateY(-1px);
+}
+.btn-ghost {
+  background: transparent; color: var(--text-soft);
+  border: 1px solid var(--border-soft);
+}
+.btn-ghost:hover { border-color: var(--ember); color: var(--ember); background: var(--ember-glow); }
+.btn-outline {
+  background: transparent; color: var(--ember); border: 1px solid var(--ember);
+}
+.btn-outline:hover { background: var(--ember-glow); transform: translateY(-1px); }
+
+.card {
+  background: var(--ink-2); border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg); padding: 24px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.card:hover { border-color: var(--border); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: var(--radius-full);
+  font-size: 11px; font-weight: 600; font-family: var(--font-mono);
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.badge-ember  { background: var(--ember-glow); color: var(--ember); border: 1px solid rgba(245,158,11,0.2); }
+.badge-fire   { background: var(--fire-glow); color: var(--fire); border: 1px solid rgba(239,104,32,0.2); }
+.badge-violet { background: var(--violet-glow); color: var(--violet); border: 1px solid rgba(139,92,246,0.2); }
+.badge-green  { background: rgba(16,185,129,0.1); color: var(--success); border: 1px solid rgba(16,185,129,0.2); }
+.badge-teal   { background: rgba(20,184,166,0.1); color: #14B8A6; border: 1px solid rgba(20,184,166,0.2); }
+
+.input {
+  width: 100%; background: var(--ink-3);
+  border: 1px solid var(--border-soft); border-radius: var(--radius);
+  padding: 12px 16px; color: var(--text);
+  font-family: var(--font-body); font-size: 14px;
+  transition: border-color 0.15s, box-shadow 0.15s; outline: none;
+}
+.input::placeholder { color: var(--text-muted); }
+.input:focus { border-color: var(--ember); box-shadow: 0 0 0 3px var(--ember-glow); }
+
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 32px 0;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes emberPulse {
+  0%, 100% { box-shadow: 0 0 20px var(--ember-glow); }
+  50%       { box-shadow: 0 0 40px var(--ember-glow-strong); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-fade-up { animation: fadeUp 0.6s ease forwards; }
+.animate-fade-up-delay-1 { animation: fadeUp 0.6s 0.1s ease both; }
+.animate-fade-up-delay-2 { animation: fadeUp 0.6s 0.2s ease both; }
+.animate-fade-up-delay-3 { animation: fadeUp 0.6s 0.3s ease both; }
+.animate-fade-up-delay-4 { animation: fadeUp 0.6s 0.4s ease both; }
+
+.text-ember  { color: var(--ember); }
+.text-soft   { color: var(--text-soft); }
+.text-muted  { color: var(--text-muted); }
+.text-cream  { color: var(--cream); }
+.text-mono   { font-family: var(--font-mono); }
+.text-display { font-family: var(--font-display); }
+
+.ember-glow-text {
+  background: linear-gradient(135deg, var(--ember-light), var(--fire));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.teal { color: #14B8A6; }
+.amber { color: var(--ember); }

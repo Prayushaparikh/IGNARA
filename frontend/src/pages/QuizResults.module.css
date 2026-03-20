@@ -1,0 +1,84 @@
+.page { padding: 60px 48px; max-width: 960px; margin: 0 auto; position: relative; }
+
+.orb {
+  position: fixed; top: -100px; right: -200px;
+  width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(245,158,11,0.08) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+/* Header */
+.header { position: relative; z-index: 1; margin-bottom: 40px; display: flex; flex-direction: column; gap: 14px; }
+.headline { font-size: clamp(28px, 4vw, 48px); line-height: 1.15; }
+.desc { font-size: 15px; color: var(--text-soft); max-width: 560px; line-height: 1.75; }
+
+/* Content */
+.content { display: flex; flex-direction: column; gap: 24px; position: relative; z-index: 1; }
+
+/* Track card */
+.trackCard {
+  background: var(--ink-2); border: 1px solid;
+  border-radius: var(--radius-xl); padding: 32px;
+}
+.trackTop { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; }
+.trackLabel { font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 8px; }
+.trackUnit  { font-family: var(--font-display); font-size: 24px; color: var(--cream); margin-bottom: 6px; }
+.trackFirst { font-size: 13px; color: var(--text-muted); }
+.trackIcon  { font-size: 48px; opacity: 0.8; }
+
+/* Path */
+.trackPath { display: flex; align-items: center; margin-bottom: 24px; gap: 0; }
+.pathStep  { display: flex; align-items: center; gap: 0; }
+.pathDot   {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--ink-4); border: 1.5px solid var(--border-soft);
+  flex-shrink: 0; transition: all 0.2s;
+}
+.pathDotActive { width: 16px; height: 16px; }
+.pathDotDone   { background: var(--success); border-color: var(--success); }
+.pathLabel      { font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); white-space: nowrap; margin: 0 8px; }
+.pathLabelActive{ font-weight: 700; }
+.pathLine      { width: 40px; height: 1.5px; background: var(--border-soft); }
+.pathLineDone  { background: var(--success); }
+
+/* Career sidebar */
+.careerSidebar {
+  background: var(--ink-2); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); padding: 24px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.careerSidebarHeader { display: flex; flex-direction: column; gap: 6px; }
+.careerSidebarNote   { font-size: 12px; color: var(--text-muted); font-style: italic; }
+.careerCard { display: flex; align-items: center; gap: 16px; padding: 16px; background: var(--ink-3); border-radius: var(--radius-lg); }
+.careerIcon  { font-size: 32px; flex-shrink: 0; }
+.careerTitle { font-family: var(--font-display); font-size: 18px; color: var(--cream); margin-bottom: 4px; }
+.careerNote  { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+.careerLink  { font-size: 12px; color: var(--ember); font-family: var(--font-mono); }
+.careerDisclaimer { font-size: 11px; color: var(--text-muted); font-style: italic; text-align: center; }
+
+/* Next steps */
+.nextSteps  { display: flex; flex-direction: column; gap: 16px; }
+.nextTitle  { font-family: var(--font-display); font-size: 20px; color: var(--cream); }
+.nextGrid   { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.stepIcon   { font-size: 24px; display: block; margin-bottom: 10px; }
+.stepTitle  { font-family: var(--font-display); font-size: 15px; color: var(--cream); margin-bottom: 6px; }
+.stepDesc   { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+/* Loading */
+.loading {
+  height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+  color: var(--text-soft);
+}
+.spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid var(--ink-3); border-top-color: var(--ember);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 768px) {
+  .page { padding: 40px 20px; }
+  .nextGrid { grid-template-columns: repeat(2, 1fr); }
+  .trackPath { flex-wrap: wrap; gap: 8px; }
+}

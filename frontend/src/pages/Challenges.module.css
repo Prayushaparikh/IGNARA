@@ -1,0 +1,35 @@
+/* Challenges.module.css */
+.page { padding: 40px 48px; max-width: 1200px; }
+.loading { height: 60vh; display: flex; align-items: center; justify-content: center; }
+.spinner { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--teal); animation: spin 0.7s linear infinite; display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
+.header h1 { font-size: 32px; letter-spacing: -0.02em; }
+.personalized {
+  margin-bottom: 24px;
+  padding: 18px;
+  border: 1px solid var(--teal);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(59, 235, 199, 0.07), rgba(59, 235, 199, 0.02));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.personalized h2 { font-size: 20px; margin: 10px 0 6px; }
+.reasoning { color: var(--text-soft); margin: 0 0 10px; }
+.misList { display: flex; gap: 6px; flex-wrap: wrap; }
+.filters { display: flex; gap: 6px; }
+.filterBtn { padding: 7px 16px; border-radius: 100px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 13px; font-family: var(--font-display); font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.filterBtn:hover { color: var(--text); }
+.active { background: var(--teal-glow); border-color: var(--teal); color: var(--teal); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.card { background: var(--ink-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; cursor: pointer; transition: all 0.2s; }
+.card:hover { border-color: var(--teal); transform: translateY(-3px); box-shadow: 0 8px 28px var(--teal-glow); }
+.cardTop { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.langs { display: flex; gap: 6px; }
+.card h3 { font-size: 17px; margin-bottom: 8px; font-family: var(--font-display); }
+.card p  { color: var(--text-soft); font-size: 13px; line-height: 1.6; margin-bottom: 14px; }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font-size: 11px; font-family: var(--font-mono); color: var(--muted); background: var(--ink-3); padding: 2px 8px; border-radius: 100px; }
