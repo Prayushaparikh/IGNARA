@@ -155,3 +155,19 @@ export const TRACK_PLACEMENT = (score) => {
   if (score >= 4)  return { track: "high-school",          label: "High School Track",    level: "Intermediate",  desc: "You know the basics. Let's level you up fast." };
   return           { track: "high-school",                 label: "High School Track",    level: "Foundations",   desc: "Perfect starting point. Everyone begins here." };
 };
+
+/**
+ * q6 = "Have you ever written code before?" — options 0–1 are self-reported no/minimal experience.
+ * Those learners should stay on the Foundation path even if they guess later knowledge questions correctly.
+ */
+export function resolveTrackPlacement(knowledgeScore, { selfReportNoOrMinimalCoding } = {}) {
+  if (selfReportNoOrMinimalCoding) {
+    return {
+      track: "high-school",
+      label: "High School Track",
+      level: "Foundations",
+      desc: "You said you're new or just starting — we'll begin with B1 foundations at a comfortable pace.",
+    };
+  }
+  return TRACK_PLACEMENT(knowledgeScore);
+}

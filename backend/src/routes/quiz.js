@@ -1,6 +1,6 @@
 import express from "express";
 import { authMiddleware } from "../middleware/auth.js";
-import { QUIZ_QUESTIONS, CAREER_VECTORS, TRACK_PLACEMENT } from "../data/quizSchema.js";
+import { QUIZ_QUESTIONS, CAREER_VECTORS, resolveTrackPlacement } from "../data/quizSchema.js";
 import { query } from "../db/connection.js";
 
 const router = express.Router();
@@ -25,12 +25,18 @@ router.post("/submit", authMiddleware, async (req, res, next) => {
     // ── Score knowledge questions → track placement ──
     let knowledgeScore = 0;
     const interestWeights = {};
+    /** q6 indices 0–1: "Never" / "A little" — always Foundations (ignore lucky guesses on q7–q10). */
+    let selfReportNoOrMinimalCoding = false;
 
     for (const ans of answers) {
       const q = QUIZ_QUESTIONS.find(q => q.id === ans.questionId);
       if (!q) continue;
       const opt = q.options[ans.selectedIndex];
       if (!opt) continue;
+
+      if (q.id === "q6" && q.part === "knowledge") {
+        if (ans.selectedIndex === 0 || ans.selectedIndex === 1) selfReportNoOrMinimalCoding = true;
+      }
 
       if (q.part === "knowledge") {
         knowledgeScore += opt.score || 0;
@@ -49,8 +55,7 @@ router.post("/submit", authMiddleware, async (req, res, next) => {
       Object.entries(interestWeights).map(([k, v]) => [k, +(v / maxW).toFixed(2)])
     );
 
-    // Track placement based on knowledge score (max 8 pts)
-    const placement = TRACK_PLACEMENT(knowledgeScore);
+    const placement = resolveTrackPlacement(knowledgeScore, { selfReportNoOrMinimalCoding });
 
     // Top interest trait → career suggestion (sidebar only)
     const topTrait = Object.entries(studentProfile).sort((a,b) => b[1]-a[1])[0]?.[0];
