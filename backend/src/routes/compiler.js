@@ -3,6 +3,7 @@ import { exec }  from "child_process";
 import { promisify } from "util";
 import { authMiddleware } from "../middleware/auth.js";
 import { query } from "../db/connection.js";
+import { getCurrentUnit, getUserUnitProgress, UNIT_ORDER } from "../utils/unitProgress.js";
 import { v4 as uuid } from "uuid";
 import fs from "fs/promises";
 import path from "path";
@@ -83,6 +84,24 @@ router.post("/submit", authMiddleware, async (req, res, next) => {
     if (!rows[0]) return res.status(404).json({ error: "Challenge not found" });
 
     const challenge  = rows[0];
+    const progressRows = await getUserUnitProgress(req.user.id);
+    const currentUnit = getCurrentUnit(progressRows);
+    const unitProg = progressRows.find((u) => u.unitCode === challenge.unit_code);
+    const challengeOrder = Number(challenge.unit_order_index || 0);
+
+    if (challenge.unit_code && UNIT_ORDER.indexOf(challenge.unit_code) > UNIT_ORDER.indexOf(currentUnit)) {
+      return res.status(403).json({ error: "Complete your current unit before attempting future units." });
+    }
+    if (challengeOrder > 0 && challengeOrder <= 5) {
+      if (!unitProg?.lessonRead) {
+        return res.status(403).json({ error: "Read the lesson first to unlock graded challenges." });
+      }
+      const unlockedUntil = Math.max(1, Number(unitProg?.challengesPassed || 0) + 1);
+      if (challengeOrder > unlockedUntil) {
+        return res.status(403).json({ error: "Finish previous challenges first. Challenges unlock in order." });
+      }
+    }
+
     const testCases  = challenge.test_cases;
     const results    = [];
     let allPassed    = true;
@@ -149,6 +168,23 @@ router.post("/submit", authMiddleware, async (req, res, next) => {
           [req.user.id, skillId]
         ).catch(() => {}); // ignore if skill doesn't exist in table
       }
+    }
+
+    if (allPassed && challenge.unit_code && challengeOrder > 0 && challengeOrder <= 5) {
+      const { rows: cRows } = await query(
+        `SELECT COUNT(DISTINCT s.challenge_id) AS passed_count
+         FROM submissions s
+         JOIN challenges c ON c.id = s.challenge_id
+         WHERE s.user_id = $1 AND s.passed = true AND c.unit_code = $2 AND c.unit_order_index <= 5`,
+        [req.user.id, challenge.unit_code]
+      );
+      const passedCount = Number(cRows[0]?.passed_count || 0);
+      await query(
+        `UPDATE user_unit_progress
+         SET challenges_passed = $3, updated_at = NOW()
+         WHERE user_id = $1 AND unit_code = $2`,
+        [req.user.id, challenge.unit_code, Math.min(5, passedCount)]
+      );
     }
 
     res.json({ submissionId: sub[0].id, passed: allPassed, results, tutor });

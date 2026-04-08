@@ -7,8 +7,9 @@ const studentNav = [
   { to: "/dashboard",  icon: "◈", label: "Dashboard"  },
   { to: "/quiz",       icon: "◆", label: "Career Quiz" },
   { to: "/careers",    icon: "✦", label: "Careers"     },
-  { to: "/lessons",    icon: "📘", label: "Lessons"     },
+  { to: "/foundation", icon: "📘", label: "Lessons"     },
   { to: "/challenges", icon: "⚡", label: "Challenges"  },
+  { to: "/projects",   icon: "🏗", label: "Projects"    },
   { to: "/roadmap",    icon: "🗺️", label: "My Roadmap" },
   { to: "/compiler",   icon: "⌥", label: "Compiler"    },
 ];

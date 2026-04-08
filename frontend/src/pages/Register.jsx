@@ -22,7 +22,7 @@ export default function Register() {
       <div className={styles.card}>
         <div className={styles.logoMark}>◈</div>
         <h1 className={styles.title}>Start your path</h1>
-        <p className={styles.sub}>Free forever for students</p>
+        <p className={styles.sub}>Ignara means ignition. Every dream begins with a dreamer.</p>
 
         {error && <div className={styles.error}>{error}</div>}
 

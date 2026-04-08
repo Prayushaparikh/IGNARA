@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore.js";
 import api from "../services/api.js";
 import styles from "./Dashboard.module.css";
-import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Tooltip } from "recharts";
 
 export default function Dashboard() {
   const { user }    = useAuthStore();
@@ -25,18 +24,14 @@ export default function Dashboard() {
 
   if (loading) return <div className={styles.loading}><span className={styles.spinner} /></div>;
 
-  const profile = data?.studentProfile;
-  const radarData = profile ? Object.entries(profile).map(([k, v]) => ({
-    trait: k.replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase()),
-    value: Math.round(v * 100),
-  })) : [];
+  const track = data?.currentUnit?.startsWith("A") ? "Advanced" : data?.currentUnit?.startsWith("I") ? "Intermediate" : "Beginner";
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <div>
           <h1>Hey, {user?.name?.split(" ")[0]} 👋</h1>
-          <p className="text-muted">Here's where you stand today.</p>
+          <p className="text-muted">You are on {data?.currentUnit || "B1"} • {track} track.</p>
         </div>
         {!data?.primaryCareer && (
           <button className="btn btn-primary" onClick={() => nav("/quiz")}>
@@ -49,9 +44,9 @@ export default function Dashboard() {
       <div className={styles.statsRow}>
         {[
           { label: "Challenges done",   value: data?.completedCount || 0,      color: "teal" },
-          { label: "Skills earned",     value: data?.skills?.length || 0,       color: "amber" },
-          { label: "Career match",      value: data?.primaryCareer ? "Active"  : "Not set", color: "violet" },
-          { label: "Submissions",       value: data?.recentSubmissions?.length || 0, color: "coral" },
+          { label: "Day streak",        value: 1,                                color: "amber" },
+          { label: "Units completed",   value: data?.unitProgress?.filter((u) => u.projectPassed).length || 0, color: "violet" },
+          { label: "Skills earned",     value: data?.skills?.length || 0,        color: "coral" },
         ].map(s => (
           <div key={s.label} className={styles.stat}>
             <span className={styles.statValue} style={{ color: `var(--${s.color})` }}>{s.value}</span>
@@ -61,28 +56,22 @@ export default function Dashboard() {
       </div>
 
       <div className={styles.grid}>
-        {/* ── Radar ── */}
-        {radarData.length > 0 && (
-          <div className={`card ${styles.radarCard}`}>
-            <h3 className={styles.cardTitle}>Your Trait Profile</h3>
-            <ResponsiveContainer width="100%" height={240}>
-              <RadarChart data={radarData}>
-                <PolarGrid stroke="var(--border)" />
-                <PolarAngleAxis dataKey="trait" tick={{ fill: "var(--text-soft)", fontSize: 11, fontFamily: "var(--font-mono)" }} />
-                <Radar dataKey="value" stroke="var(--teal)" fill="var(--teal)" fillOpacity={0.15} strokeWidth={2} />
-                <Tooltip contentStyle={{ background: "var(--ink-2)", border: "1px solid var(--border)", borderRadius: 8 }} />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-        )}
+        <div className={`card ${styles.nextCard}`}>
+          <span className="badge badge-teal">Current unit</span>
+          <h3 className={styles.cardTitle}>{data?.currentUnit || "B1"}</h3>
+          <p className={styles.nextReason}>Continue your lesson and complete 5 ordered challenges before the unit project.</p>
+          <button className="btn btn-primary" style={{ marginTop: 20, width: "100%", justifyContent: "center" }} onClick={() => nav("/foundation")}>
+            Continue where you left off →
+          </button>
+        </div>
 
         {/* ── Next Challenge ── */}
         {next?.recommended && (
           <div className={`card ${styles.nextCard}`}>
-            <div className={styles.nextBadge}><span className="badge badge-amber">AI Recommended</span></div>
-            <h3 className={styles.cardTitle}>Next Challenge</h3>
+            <div className={styles.nextBadge}><span className="badge badge-amber">Career insight</span></div>
+            <h3 className={styles.cardTitle}>Suggested role: {data?.primaryCareer || "Explore careers"}</h3>
             <p className={styles.nextTitle}>{next.recommended.title}</p>
-            <p className={styles.nextReason}>{next.reasoning}</p>
+            <p className={styles.nextReason}>Not a requirement. Explore and choose your own path.</p>
             <div className={styles.nextMeta}>
               <span className={`badge ${next.recommended.difficulty === "easy" ? "badge-teal" : next.recommended.difficulty === "hard" ? "badge-coral" : "badge-amber"}`}>
                 {next.recommended.difficulty}
@@ -92,8 +81,8 @@ export default function Dashboard() {
               ))}
             </div>
             <button className="btn btn-primary" style={{ marginTop: 20, width: "100%", justifyContent: "center" }}
-              onClick={() => nav(`/challenges/${next.recommended.id}`)}>
-              Start challenge →
+              onClick={() => nav(`/careers`)}>
+              Explore careers →
             </button>
           </div>
         )}

@@ -22,7 +22,7 @@ export default function Login() {
       <div className={styles.card}>
         <div className={styles.logoMark}>◈</div>
         <h1 className={styles.title}>Welcome back</h1>
-        <p className={styles.sub}>Sign in to continue your path</p>
+        <p className={styles.sub}>Continue your path from zero to internship-ready developer.</p>
 
         {error && <div className={styles.error}>{error}</div>}
 

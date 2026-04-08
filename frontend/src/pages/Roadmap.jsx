@@ -20,8 +20,8 @@ export default function Roadmap() {
   if (loading) return (
     <div className={styles.loading}>
       <div className={styles.spinner} />
-      <p>Claude AI is building your personalized roadmap…</p>
-      <span className={styles.loadingSub}>Analyzing your profile, skills, and career goals</span>
+      <p>Building your personalized roadmap…</p>
+      <span className={styles.loadingSub}>Using your current unit and progress</span>
     </div>
   );
 
@@ -29,7 +29,7 @@ export default function Roadmap() {
     <div className={styles.error}>
       <span>⚠️</span>
       <p>{error}</p>
-      <p className={styles.errorHint}>Make sure ANTHROPIC_API_KEY is set in your .env file</p>
+      <p className={styles.errorHint}>Please try again in a moment.</p>
       <button className="btn btn-ghost" onClick={() => nav("/dashboard")}>← Back to dashboard</button>
     </div>
   );
@@ -43,7 +43,7 @@ export default function Roadmap() {
       {/* ── Header ── */}
       <div className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className="badge badge-teal">🤖 AI Generated • Personalized for you</span>
+          <span className="badge badge-teal">Personalized for you</span>
           <h1>{roadmap.headline}</h1>
           <p className={styles.summary}>{roadmap.summary}</p>
         </div>
@@ -118,7 +118,7 @@ export default function Roadmap() {
 
               {/* AI Tip */}
               <div className={`card ${styles.tipCard}`}>
-                <h4 className={styles.cardLabel}>🤖 Claude's tip for you</h4>
+                <h4 className={styles.cardLabel}>Tip for this week</h4>
                 <p className={styles.tipText}>{currentWeek.tip}</p>
               </div>
             </div>

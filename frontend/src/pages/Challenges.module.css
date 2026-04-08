@@ -33,3 +33,27 @@
 .card p  { color: var(--text-soft); font-size: 13px; line-height: 1.6; margin-bottom: 14px; }
 .tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .tag { font-size: 11px; font-family: var(--font-mono); color: var(--muted); background: var(--ink-3); padding: 2px 8px; border-radius: 100px; }
+.lockedCard { opacity: 0.6; cursor: not-allowed; }
+.lockMeta { margin-bottom: 8px; }
+.practiceLane {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  background: var(--ink-2);
+}
+.practiceLane p { margin: 4px 0 10px; color: var(--text-muted); }
+.practiceList { display: flex; flex-wrap: wrap; gap: 8px; }
+.projectNudge {
+  margin-top: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--ink-2);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.projectNudge p { margin: 4px 0 0; color: var(--text-muted); }

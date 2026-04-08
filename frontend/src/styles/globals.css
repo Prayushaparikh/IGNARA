@@ -169,3 +169,11 @@ a:hover { color: var(--ember-light); }
 
 .teal { color: #14B8A6; }
 .amber { color: var(--ember); }
+
+/* View Transitions API — soft page-to-page feel when supported */
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation-duration: 0.25s;
+  animation-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+}

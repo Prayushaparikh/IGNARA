@@ -15,6 +15,8 @@ export default function Compiler() {
   const [running, setRunning]     = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult]       = useState(null);
+  const [failAttempts, setFailAttempts] = useState(0);
+  const [hintLevel, setHintLevel] = useState(0);
 
   useEffect(() => {
     api.get(`/challenges/${id}`).then(r => {
@@ -38,6 +40,12 @@ export default function Compiler() {
     try {
       const { data } = await api.post("/compiler/submit", { code, language: lang, challengeId: id });
       setResult(data);
+      if (data.passed) {
+        setFailAttempts(0);
+        setHintLevel(0);
+      } else {
+        setFailAttempts((n) => n + 1);
+      }
     } finally { setSubmitting(false); }
   };
 
@@ -87,6 +95,13 @@ export default function Compiler() {
             ))}
           </div>
           <div className={styles.actions}>
+            <button
+              className="btn btn-ghost"
+              onClick={() => setHintLevel((n) => Math.min(2, n + 1))}
+              disabled={!result?.tutor}
+            >
+              Get a hint
+            </button>
             <button className="btn btn-ghost" onClick={run} disabled={running || submitting}>
               {running ? "▶ Running…" : "▶ Run"}
             </button>
@@ -144,6 +159,20 @@ export default function Compiler() {
                     </div>
                   ))}
                 </div>
+                {!result.passed && result.tutor && hintLevel > 0 && (
+                  <div className={styles.hintBox}>
+                    <strong>What happened:</strong> Your output did not match expected tests.
+                    <br />
+                    <strong>Why it happened:</strong> {result.tutor.title}.
+                    <br />
+                    <strong>Try this:</strong> {result.tutor.hint}
+                  </div>
+                )}
+                {!result.passed && failAttempts >= 3 && (
+                  <div className={styles.hintBox}>
+                    <strong>Show solution:</strong> Re-read the prompt and rewrite from starter code. Solve one example input by hand first, then code that exact logic.
+                  </div>
+                )}
               </div>
             )}
           </div>

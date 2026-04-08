@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api.js";
-import { QUIZ_QUESTIONS } from "../../../backend/src/data/quizSchema.js";
+import { QUIZ_QUESTIONS } from "../data/quizSchema.js";
 import styles from "./Quiz.module.css";
 
 const TOTAL = QUIZ_QUESTIONS.length;
@@ -81,6 +81,10 @@ export default function Quiz() {
             {partLabel}
           </span>
           <span className={styles.partDesc}>{partDesc}</span>
+        </div>
+        <div className={styles.partBadge} style={{ marginTop: 6 }}>
+          <span className="badge badge-teal">Journey step 2 of 4</span>
+          <span className={styles.partDesc}>Sign up → Quiz → Results → First Foundation lesson</span>
         </div>
 
         {/* Question number */}

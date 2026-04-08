@@ -1,6 +1,7 @@
 import express from "express";
 import { authMiddleware } from "../middleware/auth.js";
 import { query } from "../db/connection.js";
+import { getCurrentUnit, getUserUnitProgress, UNIT_ORDER } from "../utils/unitProgress.js";
 
 const router = express.Router();
 
@@ -139,27 +140,62 @@ const LESSONS = {
   },
 };
 
-const UNIT_ORDER = Object.keys(LESSONS);
-
 function normalizePassRate(passed, total) {
   if (!total) return 0;
   return Math.round((passed / total) * 100);
 }
 
+const LESSON_CONTENT = {
+  B1: {
+    hookCode: `name = input("What is your name? ")\nprint("Hello, " + name + "!")`,
+    hookPrompt: "Where do you think the name gets stored?",
+    concept:
+      "A variable is a labeled box that stores a value. input() reads text from the user, and print() shows output. In Python, input() always returns a string, so convert to int() when you need math.",
+    commonMistakes: [
+      "Wrong: '3' + '5' -> '35'. Why: both are text. Right: int('3') + int('5') -> 8",
+      "Wrong: input() + 5 raises type error. Right: int(input()) + 5",
+    ],
+    realWorld: "Apps like Spotify store your typed username in variables before using it in logic.",
+  },
+  B2: {
+    hookCode: `for i in range(1, 6):\n    print(i)`,
+    hookPrompt: "Why does this stop at 5 and not continue forever?",
+    concept:
+      "Control flow decides what runs and how many times. if/elif/else picks one path; loops repeat work. Most beginner bugs happen at boundaries: start, end, and stop conditions.",
+    commonMistakes: [
+      "Wrong: range(5) when you need 1..5. Right: range(1, 6)",
+      "Wrong: while n > 0 with n never changing. Right: update n each loop",
+    ],
+    realWorld: "Notification systems use loop + condition logic to decide who gets which message.",
+  },
+  B3: {
+    hookCode: `def greet(name):\n    return "Hi " + name`,
+    hookPrompt: "Why is return better than print inside reusable functions?",
+    concept:
+      "Functions package one job into reusable blocks. Parameters bring input in, return sends output out. Keep each function focused and predictable, and avoid hidden side effects.",
+    commonMistakes: [
+      "Wrong: print(result) inside helper. Right: return result",
+      "Wrong: recursion without base case. Right: define smallest stopping input first",
+    ],
+    realWorld: "Backend APIs rely on small functions so teams can test and debug safely.",
+  },
+};
+
 router.get("/me", authMiddleware, async (req, res, next) => {
   try {
     const userId = req.user.id;
 
-    const [{ rows: unitRows }, { rows: profileRows }] = await Promise.all([
+    const [progressRows, { rows: unitRows }, { rows: profileRows }] = await Promise.all([
+      getUserUnitProgress(userId),
       query(
         `SELECT
-           mt.unit_code,
+           c.unit_code,
            COUNT(DISTINCT c.id) AS total_challenges,
            COUNT(DISTINCT CASE WHEN s.passed THEN c.id END) AS passed_challenges
-         FROM misconception_tags mt
-         LEFT JOIN challenges c ON c.sensor_tag = mt.tag
+         FROM challenges c
          LEFT JOIN submissions s ON s.challenge_id = c.id AND s.user_id = $1
-         GROUP BY mt.unit_code`,
+         WHERE c.unit_order_index <= 5
+         GROUP BY c.unit_code`,
         [userId]
       ),
       query(
@@ -183,22 +219,26 @@ router.get("/me", authMiddleware, async (req, res, next) => {
       ])
     );
 
+    const currentUnitCode = getCurrentUnit(progressRows);
+
     const units = UNIT_ORDER.map((code) => {
       const progress = unitProgressMap.get(code) || { totalChallenges: 0, passedChallenges: 0 };
-      const completed = progress.totalChallenges > 0 && progress.passedChallenges >= progress.totalChallenges;
+      const unitProg = progressRows.find((u) => u.unitCode === code);
+      const completed = Boolean(unitProg?.projectPassed);
+      const unlocked = UNIT_ORDER.indexOf(code) <= UNIT_ORDER.indexOf(currentUnitCode);
       return {
         ...LESSONS[code],
         totalChallenges: progress.totalChallenges,
         passedChallenges: progress.passedChallenges,
         passRate: normalizePassRate(progress.passedChallenges, progress.totalChallenges),
         completed,
+        lessonRead: Boolean(unitProg?.lessonRead),
+        projectPassed: Boolean(unitProg?.projectPassed),
+        unlocked,
       };
     });
 
-    const currentUnit =
-      units.find((u) => u.totalChallenges > 0 && !u.completed) ||
-      units.find((u) => u.totalChallenges > 0) ||
-      units[0];
+    const currentUnit = units.find((u) => u.unitCode === currentUnitCode) || units[0];
 
     const unitMisconception = profileRows.find((p) => p.unit_code === currentUnit.unitCode) || null;
     const globalTopMisconception = profileRows[0] || null;
@@ -270,6 +310,16 @@ router.get("/me", authMiddleware, async (req, res, next) => {
 
     res.json({
       currentLesson: currentUnit,
+      lessonContent: LESSON_CONTENT[currentUnit.unitCode] || {
+        hookCode: "# Lesson content coming soon",
+        hookPrompt: "What do you think happens next?",
+        concept: currentUnit.summary,
+        commonMistakes: ["Be careful with edge cases and type conversions."],
+        realWorld: "This concept appears in real product code every day.",
+      },
+      unlock: {
+        lessonRead: Boolean(progressRows.find((u) => u.unitCode === currentUnit.unitCode)?.lessonRead),
+      },
       units,
       topMisconceptions: profileRows,
       transition,
@@ -280,6 +330,62 @@ router.get("/me", authMiddleware, async (req, res, next) => {
           : null,
       ].filter(Boolean),
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/mark-read", authMiddleware, async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { unitCode } = req.body || {};
+    if (!unitCode || !UNIT_ORDER.includes(unitCode)) {
+      return res.status(400).json({ error: "Valid unitCode is required" });
+    }
+    await query(
+      `UPDATE user_unit_progress
+       SET lesson_read = true, updated_at = NOW()
+       WHERE user_id = $1 AND unit_code = $2`,
+      [userId, unitCode]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/project-complete", authMiddleware, async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { unitCode } = req.body || {};
+    if (!unitCode || !UNIT_ORDER.includes(unitCode)) {
+      return res.status(400).json({ error: "Valid unitCode is required" });
+    }
+    const { rows: prog } = await query(
+      "SELECT challenges_passed FROM user_unit_progress WHERE user_id = $1 AND unit_code = $2",
+      [userId, unitCode]
+    );
+    const passed = Number(prog[0]?.challenges_passed || 0);
+    if (passed < 5) {
+      return res.status(400).json({ error: "Complete all 5 challenges before project unlock." });
+    }
+    await query(
+      `UPDATE user_unit_progress
+       SET project_passed = true, updated_at = NOW()
+       WHERE user_id = $1 AND unit_code = $2`,
+      [userId, unitCode]
+    );
+    const idx = UNIT_ORDER.indexOf(unitCode);
+    const next = UNIT_ORDER[idx + 1];
+    if (next) {
+      await query(
+        `UPDATE user_unit_progress
+         SET lesson_read = true, updated_at = NOW()
+         WHERE user_id = $1 AND unit_code = $2 AND lesson_read = false`,
+        [userId, next]
+      );
+    }
+    res.json({ ok: true, nextUnitCode: next || null });
   } catch (err) {
     next(err);
   }

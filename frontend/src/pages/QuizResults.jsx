@@ -110,8 +110,8 @@ export default function QuizResults() {
 
           <button className="btn btn-primary"
             style={{ background: track.color, boxShadow: `0 0 20px ${track.color}40`, marginTop: 8 }}
-            onClick={() => nav("/challenges")}>
-            Start your first challenge →
+            onClick={() => nav("/foundation/b1/lesson")}>
+            Start your first lesson →
           </button>
         </div>
 

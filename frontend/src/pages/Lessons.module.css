@@ -71,6 +71,32 @@
   color: var(--text-muted);
 }
 
+.flowText {
+  margin: 8px 0 14px;
+  color: var(--text-muted);
+}
+
+.flowActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.code {
+  background: var(--ink-3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  overflow: auto;
+}
+
+.realWorld {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 8px;
+  padding: 10px;
+}
+
 @media (max-width: 1000px) {
   .grid {
     grid-template-columns: 1fr;

@@ -1,7 +1,17 @@
 import axios from "axios";
 
+const FALLBACK_API_URL = "http://54.237.236.205:4000";
+const configuredApiUrl = import.meta.env.VITE_API_URL || FALLBACK_API_URL;
+const isHttpsPage = typeof window !== "undefined" && window.location.protocol === "https:";
+const isConfiguredUrlInsecure = configuredApiUrl.startsWith("http://");
+
+// On HTTPS deployments, avoid mixed-content by using same-origin /api proxy.
+const baseURL = isHttpsPage && isConfiguredUrlInsecure
+  ? "/api"
+  : `${configuredApiUrl}/api`;
+
 const api = axios.create({
-  baseURL: (import.meta.env.VITE_API_URL || "http://localhost:4000") + "/api",
+  baseURL,
   timeout: 30000,
 });
 
@@ -16,7 +26,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
+    const requestUrl = err.config?.url || "";
+    const isAuthRequest =
+      requestUrl.includes("/auth/login") || requestUrl.includes("/auth/register");
+
+    if (err.response?.status === 401 && !isAuthRequest) {
       localStorage.removeItem("dp_token");
       localStorage.removeItem("dp_user");
       window.location.href = "/login";

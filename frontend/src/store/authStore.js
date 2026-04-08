@@ -17,7 +17,16 @@ export const useAuthStore = create((set) => ({
       set({ user: data.user, token: data.token, loading: false });
       return data;
     } catch (err) {
-      set({ error: err.response?.data?.error || "Login failed", loading: false });
+      const status = err.response?.status;
+      const backendError = err.response?.data?.error;
+      const message =
+        backendError ||
+        (status
+          ? `Login failed (${status}).`
+          : err.code === "ECONNABORTED"
+            ? "Request timed out. Please try again."
+            : "Unable to reach server. Check connection and try again.");
+      set({ error: message, loading: false });
       throw err;
     }
   },
@@ -31,7 +40,16 @@ export const useAuthStore = create((set) => ({
       set({ user: data.user, token: data.token, loading: false });
       return data;
     } catch (err) {
-      set({ error: err.response?.data?.error || "Registration failed", loading: false });
+      const status = err.response?.status;
+      const backendError = err.response?.data?.error;
+      const message =
+        backendError ||
+        (status
+          ? `Registration failed (${status}).`
+          : err.code === "ECONNABORTED"
+            ? "Request timed out. Please try again."
+            : "Unable to reach server. Check connection and try again.");
+      set({ error: message, loading: false });
       throw err;
     }
   },

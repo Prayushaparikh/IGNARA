@@ -2,6 +2,7 @@
 import express from "express";
 import { authMiddleware } from "../middleware/auth.js";
 import { query } from "../db/connection.js";
+import { getCurrentUnit, getUserUnitProgress } from "../utils/unitProgress.js";
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ router.get("/me", authMiddleware, async (req, res, next) => {
   try {
     const uid = req.user.id;
 
-    const [skills, submissions, careerProgress, quizResult] = await Promise.all([
+    const [skills, submissions, careerProgress, quizResult, unitProgress] = await Promise.all([
       query("SELECT skill_id, earned_at FROM user_skills WHERE user_id = $1", [uid]),
       query(
         `SELECT s.challenge_id, s.passed, s.submitted_at, c.title, c.difficulty
@@ -26,11 +27,15 @@ router.get("/me", authMiddleware, async (req, res, next) => {
         "SELECT primary_career, student_profile FROM quiz_results WHERE user_id = $1 ORDER BY taken_at DESC LIMIT 1",
         [uid]
       ),
+      getUserUnitProgress(uid),
     ]);
 
     const completedChallenges = [...new Set(
       submissions.rows.filter(s => s.passed).map(s => s.challenge_id)
     )];
+
+    const currentUnit = getCurrentUnit(unitProgress);
+    const currentUnitProgress = unitProgress.find((u) => u.unitCode === currentUnit);
 
     res.json({
       skills:             skills.rows,
@@ -39,6 +44,9 @@ router.get("/me", authMiddleware, async (req, res, next) => {
       careerProgress:     careerProgress.rows,
       studentProfile:     quizResult.rows[0]?.student_profile || null,
       primaryCareer:      quizResult.rows[0]?.primary_career  || null,
+      unitProgress,
+      currentUnit,
+      currentUnitProgress,
     });
   } catch (err) { next(err); }
 });

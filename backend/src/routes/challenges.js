@@ -2,6 +2,7 @@ import express from "express";
 import { authMiddleware } from "../middleware/auth.js";
 import { recommendNextChallenge, computeStruggleScore } from "../services/ai/challengeRecommender.js";
 import { query } from "../db/connection.js";
+import { getCurrentUnit, getUserUnitProgress } from "../utils/unitProgress.js";
 
 const router = express.Router();
 
@@ -20,24 +21,43 @@ async function getTopMisconceptions(userId, limit = 3) {
 // GET /api/challenges  — paginated list
 router.get("/", authMiddleware, async (req, res, next) => {
   try {
-    const { difficulty, language, career, page = 1, limit = 20 } = req.query;
+    const { difficulty, language, career, unit, mode = "main", page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
+    const userId = req.user.id;
     const conditions = [];
     const params     = [];
+
+    const progress = await getUserUnitProgress(userId);
+    const currentUnit = getCurrentUnit(progress);
+    const effectiveUnit = unit || currentUnit;
+    const unitProgress = progress.find((u) => u.unitCode === effectiveUnit);
+    const unlockedUntil = Math.max(1, Number(unitProgress?.challengesPassed || 0) + 1);
 
     if (difficulty) { conditions.push(`difficulty = $${params.length+1}`); params.push(difficulty); }
     if (language)   { conditions.push(`$${params.length+1} = ANY(language)`); params.push(language); }
     if (career)     { conditions.push(`$${params.length+1} = ANY(career_tags)`); params.push(career); }
+    if (effectiveUnit) { conditions.push(`unit_code = $${params.length+1}`); params.push(effectiveUnit); }
+    if (mode === "main") { conditions.push(`COALESCE(is_practice, false) = false AND unit_order_index <= 5`); }
+    if (mode === "practice") { conditions.push(`COALESCE(is_practice, false) = true`); }
 
     const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
     const { rows } = await query(
-      `SELECT id, title, description, difficulty, language, career_tags, skill_tags, sensor_tag, order_index
+      `SELECT id, title, description, difficulty, language, career_tags, skill_tags, sensor_tag, order_index, unit_code, unit_order_index, is_practice
        FROM challenges ${where}
-       ORDER BY order_index ASC
+       ORDER BY COALESCE(unit_order_index, order_index) ASC
        LIMIT $${params.length+1} OFFSET $${params.length+2}`,
       [...params, limit, offset]
     );
-    res.json(rows);
+
+    const withLocks = rows.map((c) => {
+      const isLocked =
+        mode === "main" &&
+        c.unit_code === effectiveUnit &&
+        Number(c.unit_order_index || 999) > unlockedUntil;
+      return { ...c, locked: isLocked };
+    });
+
+    res.json({ unitCode: effectiveUnit, currentUnit, unlockedUntil, mode, challenges: withLocks });
   } catch (err) { next(err); }
 });
 
@@ -78,20 +98,24 @@ router.get("/next", authMiddleware, async (req, res, next) => {
       "SELECT id, required_skills, challenge_tags, trait_vector AS traits FROM careers"
     );
 
+    const progress = await getUserUnitProgress(userId);
+    const currentUnit = getCurrentUnit(progress);
+
     // Patent #2 (MVP): prioritize misconceptions
     const topMis = await getTopMisconceptions(userId, 3);
     const topTags = topMis.map(m => m.tag);
 
-    // Get all incomplete challenges (avoid `NOT IN (NULL)` which returns 0 rows)
-    const excludeClause = completedChallengeIds.length
-      ? `WHERE id NOT IN (${completedChallengeIds.map((_, i) => `$${i + 1}`).join(",")})`
-      : "";
+    // Get all incomplete challenges within current unit
+    const whereParts = [`unit_code = $${completedChallengeIds.length + 1}`];
+    if (completedChallengeIds.length) {
+      whereParts.push(`id NOT IN (${completedChallengeIds.map((_, i) => `$${i + 1}`).join(",")})`);
+    }
 
     const { rows: allChallenges } = await query(
-      `SELECT id, title, difficulty, career_tags, skill_tags, sensor_tag
+      `SELECT id, title, difficulty, career_tags, skill_tags, sensor_tag, unit_code, unit_order_index
        FROM challenges
-       ${excludeClause}`,
-      completedChallengeIds.length ? completedChallengeIds : []
+       WHERE ${whereParts.join(" AND ")}`,
+      [...(completedChallengeIds.length ? completedChallengeIds : []), currentUnit]
     );
 
     // If they have misconceptions, try to pick a micro-challenge that targets one.
@@ -110,7 +134,7 @@ router.get("/next", authMiddleware, async (req, res, next) => {
           allChallenges
         );
 
-    res.json({ ...recommendation, struggleScore, topMisconceptions: topMis });
+    res.json({ ...recommendation, struggleScore, topMisconceptions: topMis, currentUnit });
   } catch (err) { next(err); }
 });
 
