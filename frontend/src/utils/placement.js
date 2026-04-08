@@ -1,5 +1,6 @@
 /**
- * Quiz placement.level values from backend TRACK_PLACEMENT / quiz submit.
+ * Quiz placement.level from backend: Foundations | Intermediate | Advanced
+ * (driven by self-report q6 + objective score on q7–q10 + fundamentals count).
  */
 export function skipsFoundationTrack(placementLevel) {
   return placementLevel === "Intermediate" || placementLevel === "Advanced";

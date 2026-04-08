@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api.js";
+import { mainLearningHref } from "../utils/placement.js";
 import styles from "./QuizResults.module.css";
 
 const TRACK_INFO = {
@@ -30,6 +31,14 @@ const TRACK_INFO = {
   },
 };
 
+const PROFILE_META = new Set([
+  "placement",
+  "knowledgeScore",
+  "objectiveScore",
+  "fundamentalCorrectCount",
+  "q6SelectedIndex",
+]);
+
 const CAREER_SUGGESTIONS = {
   PROBLEM_SOLVING: { id: "software-engineer",     icon: "💻", title: "Software Engineer"     },
   DATA_AFFINITY:   { id: "data-scientist",         icon: "📊", title: "Data Scientist"        },
@@ -41,14 +50,17 @@ const CAREER_SUGGESTIONS = {
 export default function QuizResults() {
   const nav = useNavigate();
   const [result, setResult] = useState(null);
+  const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/quiz/latest")
-      .then(r => setResult(r.data))
-      .catch(() => nav("/quiz"))
-      .finally(() => setLoading(false));
-  }, []);
+    Promise.allSettled([api.get("/quiz/latest"), api.get("/progress/me")]).then(([q, p]) => {
+      if (q.status === "fulfilled") setResult(q.value.data);
+      else nav("/quiz");
+      if (p.status === "fulfilled") setProgress(p.value.data);
+      setLoading(false);
+    });
+  }, [nav]);
 
   if (loading) return (
     <div className={styles.loading}>
@@ -62,8 +74,17 @@ export default function QuizResults() {
   const level     = result.placement?.level || "Foundations";
   const track     = TRACK_INFO[level] || TRACK_INFO["Foundations"];
   const profile   = result.student_profile || {};
-  const topTrait  = Object.entries(profile).sort((a,b) => b[1]-a[1])[0]?.[0];
+  const topTrait = Object.entries(profile)
+    .filter(([k, v]) => !PROFILE_META.has(k) && typeof v === "number")
+    .sort((a, b) => b[1] - a[1])[0]?.[0];
   const careerSug = CAREER_SUGGESTIONS[topTrait];
+  const continueHref = mainLearningHref(progress?.currentUnit);
+  const ctaLabel =
+    level === "Foundations"
+      ? "Start your first lesson →"
+      : level === "Intermediate"
+        ? "Go to your main challenges →"
+        : "Go to your challenge path →";
 
   return (
     <div className={styles.page}>
@@ -75,7 +96,12 @@ export default function QuizResults() {
           {track.icon} {level} Level — {result.placement?.label || "High School Track"}
         </span>
         <h1 className={styles.headline}>{track.headline}</h1>
-        <p className={styles.desc}>{track.desc}</p>
+        <p className={styles.desc}>{result.placement?.desc || track.desc}</p>
+        {typeof result.objectiveScore === "number" && (
+          <p className={styles.scoreNote}>
+            Skill checks (loops, variables, functions, structures): <strong>{result.objectiveScore}</strong> / 8
+          </p>
+        )}
       </div>
 
       <div className={styles.content}>
@@ -108,10 +134,12 @@ export default function QuizResults() {
             })}
           </div>
 
-          <button className="btn btn-primary"
+          <button
+            className="btn btn-primary"
             style={{ background: track.color, boxShadow: `0 0 20px ${track.color}40`, marginTop: 8 }}
-            onClick={() => nav("/foundation/b1/lesson")}>
-            Start your first lesson →
+            onClick={() => nav(continueHref)}
+          >
+            {ctaLabel}
           </button>
         </div>
 

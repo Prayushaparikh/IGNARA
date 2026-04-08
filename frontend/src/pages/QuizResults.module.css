@@ -11,6 +11,12 @@
 .header { position: relative; z-index: 1; margin-bottom: 40px; display: flex; flex-direction: column; gap: 14px; }
 .headline { font-size: clamp(28px, 4vw, 48px); line-height: 1.15; }
 .desc { font-size: 15px; color: var(--text-soft); max-width: 560px; line-height: 1.75; }
+.scoreNote {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+  font-family: var(--font-mono);
+}
 
 /* Content */
 .content { display: flex; flex-direction: column; gap: 24px; position: relative; z-index: 1; }

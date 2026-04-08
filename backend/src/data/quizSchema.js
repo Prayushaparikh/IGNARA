@@ -72,13 +72,14 @@ export const QUIZ_QUESTIONS = [
   {
     id: "q6",
     part: "knowledge",
-    question: "Have you ever written code before?",
+    question:
+      "How much coding have you actually done? (Answer honestly — we combine this with the checks below so you land in the right track.)",
     emoji: "💻",
     options: [
-      { label: "Never — this is brand new to me",      score: 0 },
-      { label: "A little — tried it once or twice",    score: 0 },
-      { label: "Yes — I've built a few small projects", score: 1 },
-      { label: "Yes — I code regularly",               score: 2 },
+      { label: "None yet — I'm completely new", score: 0 },
+      { label: "A tiny bit — a lesson, hour of code, or one-off try", score: 0 },
+      { label: "Some — a few small projects or a short course", score: 1 },
+      { label: "A lot — I code regularly for school, work, or personal projects", score: 2 },
     ],
   },
 
@@ -126,16 +127,23 @@ export const QUIZ_QUESTIONS = [
   {
     id: "q10",
     part: "knowledge",
-    question: "Which data structure would you use to count how many times each word appears in a sentence?",
+    question:
+      "You need to count how many times each word appears in a sentence. Which structure is the best fit?",
     emoji: "🗂️",
     options: [
-      { label: "A list / array",          score: 0 },
-      { label: "A hashmap / dictionary",  score: 2 },
-      { label: "A loop",                  score: 0 },
-      { label: "I'm not sure",            score: 0 },
+      { label: "A list / array (scan the whole list each time)", score: 0 },
+      { label: "A hash map / dictionary (word → count)", score: 2 },
+      { label: "A single loop with no extra storage", score: 0 },
+      { label: "I'm not sure", score: 0 },
     ],
   },
 ];
+
+/** q7–q10 only — objective checks (max 8). q6 is self-report for placement routing. */
+export const OBJECTIVE_QUESTION_IDS = ["q7", "q8", "q9", "q10"];
+
+/** Core syntax / semantics — Advanced requires strength here, not only data-structure trivia. */
+export const FUNDAMENTAL_QUESTION_IDS = ["q7", "q8", "q9"];
 
 export const CAREER_VECTORS = {
   "software-engineer":     { PROBLEM_SOLVING: 0.8, SYSTEMS_THINKING: 0.7, CREATIVITY: 0.5, COLLABORATION: 0.5, DATA_AFFINITY: 0.3, CURIOSITY: 0.6 },
@@ -150,24 +158,117 @@ export const CAREER_VECTORS = {
   "blockchain-developer":  { PROBLEM_SOLVING: 0.8, SYSTEMS_THINKING: 0.7, CREATIVITY: 0.5, COLLABORATION: 0.3, DATA_AFFINITY: 0.6, CURIOSITY: 0.9 },
 };
 
+/** Legacy total-score bands (q6–q10 sum, max 10). Prefer `resolveTrackPlacement`. */
 export const TRACK_PLACEMENT = (score) => {
-  if (score >= 7)  return { track: "internship-prep",      label: "Internship Prep",      level: "Advanced",      desc: "You're ready for interview-level challenges." };
-  if (score >= 4)  return { track: "high-school",          label: "High School Track",    level: "Intermediate",  desc: "You know the basics. Let's level you up fast." };
-  return           { track: "high-school",                 label: "High School Track",    level: "Foundations",   desc: "Perfect starting point. Everyone begins here." };
-};
-
-/**
- * q6 = "Have you ever written code before?" — options 0–1 are self-reported no/minimal experience.
- * Those learners should stay on the Foundation path even if they guess later knowledge questions correctly.
- */
-export function resolveTrackPlacement(knowledgeScore, { selfReportNoOrMinimalCoding } = {}) {
-  if (selfReportNoOrMinimalCoding) {
+  if (score >= 7) {
+    return {
+      track: "internship-prep",
+      label: "Internship Prep",
+      level: "Advanced",
+      desc: "You're ready for interview-level challenges.",
+    };
+  }
+  if (score >= 4) {
     return {
       track: "high-school",
       label: "High School Track",
-      level: "Foundations",
-      desc: "You said you're new or just starting — we'll begin with B1 foundations at a comfortable pace.",
+      level: "Intermediate",
+      desc: "You know the basics. Let's level you up fast.",
     };
   }
-  return TRACK_PLACEMENT(knowledgeScore);
+  return {
+    track: "high-school",
+    label: "High School Track",
+    level: "Foundations",
+    desc: "Perfect starting point. Everyone begins here.",
+  };
+};
+
+const PLACEMENT = {
+  foundations: {
+    track: "high-school",
+    label: "High School Track",
+    level: "Foundations",
+    desc: "We'll start with B1 foundations and build confidence step by step.",
+  },
+  intermediate: {
+    track: "high-school",
+    label: "High School Track",
+    level: "Intermediate",
+    desc: "You've got solid basics — we'll move faster through patterns and problem solving.",
+  },
+  advanced: {
+    track: "internship-prep",
+    label: "Internship Prep",
+    level: "Advanced",
+    desc: "Strong fundamentals — you're ready for tougher structures and interview-style problems.",
+  },
+};
+
+/**
+ * Placement uses:
+ * - q6 index 0–1: always Foundations (no/minimal real experience).
+ * - q6 index 2 ("some" projects): never Advanced; objective score drives Foundations vs Intermediate.
+ * - q6 index 3 ("a lot"): full range, but Advanced needs high objective score + 2+ fundamentals correct.
+ * - q6 index 3 with very low objective: Foundations (likely overstated experience or test anxiety).
+ *
+ * @param {object} opts
+ * @param {number} opts.objectiveScore — sum of scores on q7–q10 only (max 8)
+ * @param {number} opts.q6SelectedIndex — 0..3
+ * @param {number} opts.fundamentalCorrectCount — how many of q7,q8,q9 were fully correct (0..3)
+ */
+export function resolveTrackPlacement({
+  objectiveScore,
+  q6SelectedIndex,
+  fundamentalCorrectCount,
+}) {
+  const idx = Number.isInteger(q6SelectedIndex) ? q6SelectedIndex : 0;
+  const obj = typeof objectiveScore === "number" ? objectiveScore : 0;
+  const fc = typeof fundamentalCorrectCount === "number" ? fundamentalCorrectCount : 0;
+
+  if (idx === 0 || idx === 1) {
+    return {
+      ...PLACEMENT.foundations,
+      desc:
+        idx === 0
+          ? "You're brand new to code — we'll begin with B1 foundations at a comfortable pace."
+          : "You're just getting started — we'll build from B1 foundations before speeding up.",
+    };
+  }
+
+  if (idx === 2) {
+    if (obj >= 3) {
+      return {
+        ...PLACEMENT.intermediate,
+        desc: "You have some project experience and your checks show you're ready to level up past pure basics.",
+      };
+    }
+    return {
+      ...PLACEMENT.foundations,
+      desc: "You've tried a bit of code — we'll solidify fundamentals in B1 before moving faster.",
+    };
+  }
+
+  if (idx === 3) {
+    if (obj <= 1) {
+      return {
+        ...PLACEMENT.foundations,
+        desc: "Your answers suggest brushing up on core syntax first — we'll start in B1 and reassess as you progress.",
+      };
+    }
+    if (obj >= 6 && fc >= 2) {
+      return { ...PLACEMENT.advanced };
+    }
+    if (obj >= 2) {
+      return {
+        ...PLACEMENT.intermediate,
+        desc:
+          obj >= 5 && fc < 2
+            ? "Strong on some topics — we'll tighten loops, variables, and functions before the deep end."
+            : PLACEMENT.intermediate.desc,
+      };
+    }
+  }
+
+  return { ...PLACEMENT.foundations };
 }

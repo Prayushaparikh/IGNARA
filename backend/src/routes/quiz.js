@@ -1,6 +1,15 @@
 import express from "express";
 import { authMiddleware } from "../middleware/auth.js";
-import { QUIZ_QUESTIONS, CAREER_VECTORS, resolveTrackPlacement } from "../data/quizSchema.js";
+import {
+  QUIZ_QUESTIONS,
+  CAREER_VECTORS,
+  resolveTrackPlacement,
+  OBJECTIVE_QUESTION_IDS,
+  FUNDAMENTAL_QUESTION_IDS,
+} from "../data/quizSchema.js";
+
+const OBJECTIVE_IDS = new Set(OBJECTIVE_QUESTION_IDS);
+const FUNDAMENTAL_IDS = new Set(FUNDAMENTAL_QUESTION_IDS);
 import { query } from "../db/connection.js";
 
 const router = express.Router();
@@ -19,27 +28,35 @@ router.get("/questions", (_, res) => {
 router.post("/submit", authMiddleware, async (req, res, next) => {
   try {
     const { answers } = req.body;
-    if (!Array.isArray(answers) || answers.length < 10)
+    if (!Array.isArray(answers) || answers.length < QUIZ_QUESTIONS.length)
       return res.status(400).json({ error: "Please answer all 10 questions" });
 
-    // ── Score knowledge questions → track placement ──
+    const answeredIds = new Set(answers.map((a) => a.questionId));
+    if (answeredIds.size !== QUIZ_QUESTIONS.length || QUIZ_QUESTIONS.some((q) => !answeredIds.has(q.id))) {
+      return res.status(400).json({ error: "Please answer all 10 questions" });
+    }
+
+    // ── Score: interests + knowledge (q6 self-report + q7–q10 objective) ──
     let knowledgeScore = 0;
+    let objectiveScore = 0;
+    let fundamentalCorrectCount = 0;
+    let q6SelectedIndex = 0;
     const interestWeights = {};
-    /** q6 indices 0–1: "Never" / "A little" — always Foundations (ignore lucky guesses on q7–q10). */
-    let selfReportNoOrMinimalCoding = false;
 
     for (const ans of answers) {
-      const q = QUIZ_QUESTIONS.find(q => q.id === ans.questionId);
+      const q = QUIZ_QUESTIONS.find((qq) => qq.id === ans.questionId);
       if (!q) continue;
       const opt = q.options[ans.selectedIndex];
       if (!opt) continue;
 
-      if (q.id === "q6" && q.part === "knowledge") {
-        if (ans.selectedIndex === 0 || ans.selectedIndex === 1) selfReportNoOrMinimalCoding = true;
-      }
-
       if (q.part === "knowledge") {
-        knowledgeScore += opt.score || 0;
+        const pts = opt.score || 0;
+        knowledgeScore += pts;
+        if (q.id === "q6") q6SelectedIndex = ans.selectedIndex;
+        if (OBJECTIVE_IDS.has(q.id)) {
+          objectiveScore += pts;
+          if (FUNDAMENTAL_IDS.has(q.id) && pts >= 2) fundamentalCorrectCount += 1;
+        }
       }
 
       if (q.part === "interest" && opt.weights) {
@@ -55,7 +72,11 @@ router.post("/submit", authMiddleware, async (req, res, next) => {
       Object.entries(interestWeights).map(([k, v]) => [k, +(v / maxW).toFixed(2)])
     );
 
-    const placement = resolveTrackPlacement(knowledgeScore, { selfReportNoOrMinimalCoding });
+    const placement = resolveTrackPlacement({
+      objectiveScore,
+      q6SelectedIndex,
+      fundamentalCorrectCount,
+    });
 
     // Top interest trait → career suggestion (sidebar only)
     const topTrait = Object.entries(studentProfile).sort((a,b) => b[1]-a[1])[0]?.[0];
@@ -76,7 +97,14 @@ router.post("/submit", authMiddleware, async (req, res, next) => {
       [
         req.user.id,
         JSON.stringify(answers),
-        JSON.stringify({ ...studentProfile, placement, knowledgeScore }),
+        JSON.stringify({
+          ...studentProfile,
+          placement,
+          knowledgeScore,
+          objectiveScore,
+          fundamentalCorrectCount,
+          q6SelectedIndex,
+        }),
         JSON.stringify([{ id: suggestedCareer, score: 1 }]),
         suggestedCareer,
       ]
@@ -88,7 +116,14 @@ router.post("/submit", authMiddleware, async (req, res, next) => {
       [req.user.id, suggestedCareer]
     );
 
-    res.json({ placement, studentProfile, suggestedCareer, knowledgeScore });
+    res.json({
+      placement,
+      studentProfile,
+      suggestedCareer,
+      knowledgeScore,
+      objectiveScore,
+      fundamentalCorrectCount,
+    });
   } catch (err) { next(err); }
 });
 
@@ -105,7 +140,9 @@ router.get("/latest", authMiddleware, async (req, res, next) => {
     res.json({
       placement:       profile.placement || { level: "Foundations", label: "High School Track" },
       student_profile: profile,
-      knowledgeScore:  profile.knowledgeScore || 0,
+      knowledgeScore:  profile.knowledgeScore ?? 0,
+      objectiveScore:  profile.objectiveScore ?? null,
+      fundamentalCorrectCount: profile.fundamentalCorrectCount ?? null,
       primary_career:  r.primary_career,
       taken_at:        r.taken_at,
     });

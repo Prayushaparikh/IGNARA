@@ -62,13 +62,14 @@ export const QUIZ_QUESTIONS = [
   {
     id: "q6",
     part: "knowledge",
-    question: "Have you ever written code before?",
+    question:
+      "How much coding have you actually done? (Answer honestly — we combine this with the checks below so you land in the right track.)",
     emoji: "💻",
     options: [
-      { label: "Never — this is brand new to me", score: 0 },
-      { label: "A little — tried it once or twice", score: 0 },
-      { label: "Yes — I've built a few small projects", score: 1 },
-      { label: "Yes — I code regularly", score: 2 },
+      { label: "None yet — I'm completely new", score: 0 },
+      { label: "A tiny bit — a lesson, hour of code, or one-off try", score: 0 },
+      { label: "Some — a few small projects or a short course", score: 1 },
+      { label: "A lot — I code regularly for school, work, or personal projects", score: 2 },
     ],
   },
   {
@@ -112,12 +113,13 @@ export const QUIZ_QUESTIONS = [
   {
     id: "q10",
     part: "knowledge",
-    question: "Which data structure would you use to count how many times each word appears in a sentence?",
+    question:
+      "You need to count how many times each word appears in a sentence. Which structure is the best fit?",
     emoji: "🗂️",
     options: [
-      { label: "A list / array", score: 0 },
-      { label: "A hashmap / dictionary", score: 2 },
-      { label: "A loop", score: 0 },
+      { label: "A list / array (scan the whole list each time)", score: 0 },
+      { label: "A hash map / dictionary (word → count)", score: 2 },
+      { label: "A single loop with no extra storage", score: 0 },
       { label: "I'm not sure", score: 0 },
     ],
   },

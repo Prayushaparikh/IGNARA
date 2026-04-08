@@ -19,7 +19,7 @@ export default function Quiz() {
   const progress    = ((step) / TOTAL) * 100;
   const partLabel   = isKnowledge ? "Part 2 of 2 — Coding Level" : "Part 1 of 2 — Your Interests";
   const partDesc    = isKnowledge
-    ? "These 5 questions place you in the right learning track."
+    ? "Experience + short knowledge checks decide your track. “I'm not sure” is fine — it helps us place you safely."
     : "These 5 questions help us suggest careers. No wrong answers.";
 
   const handleSelect = (idx) => setSelected(idx);
