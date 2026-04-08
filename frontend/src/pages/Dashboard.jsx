@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore.js";
 import api from "../services/api.js";
+import { mainLearningHref, skipsFoundationTrack } from "../utils/placement.js";
 import styles from "./Dashboard.module.css";
 
 export default function Dashboard() {
@@ -24,21 +25,47 @@ export default function Dashboard() {
 
   if (loading) return <div className={styles.loading}><span className={styles.spinner} /></div>;
 
-  const track = data?.currentUnit?.startsWith("A") ? "Advanced" : data?.currentUnit?.startsWith("I") ? "Intermediate" : "Beginner";
+  const placement = data?.studentProfile?.placement;
+  const trackFromUnit =
+    data?.currentUnit?.startsWith("A") ? "Advanced" : data?.currentUnit?.startsWith("I") ? "Intermediate" : "Beginner";
+  const continueHref = mainLearningHref(data?.currentUnit);
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <div>
           <h1>Hey, {user?.name?.split(" ")[0]} 👋</h1>
-          <p className="text-muted">You are on {data?.currentUnit || "B1"} • {track} track.</p>
+          <p className="text-muted">
+            Current focus: <strong>{data?.currentUnit || "B1"}</strong>
+            {placement?.level ? (
+              <> · Placement: <strong>{placement.level}</strong> ({placement.label})</>
+            ) : (
+              <> · {trackFromUnit} track</>
+            )}
+          </p>
         </div>
-        {!data?.primaryCareer && (
+        {!data?.studentProfile?.placement && (
           <button className="btn btn-primary" onClick={() => nav("/quiz")}>
-            Take Career Quiz →
+            Take placement quiz →
           </button>
         )}
       </div>
+
+      {placement && (
+        <div className={`card ${styles.placementCard}`}>
+          <span className="badge badge-violet">Placement</span>
+          <h3 className={styles.cardTitle} style={{ marginTop: 10 }}>
+            {placement.level} — {placement.label}
+          </h3>
+          <p className={styles.nextReason}>{placement.desc}</p>
+          {skipsFoundationTrack(placement.level) && (
+            <p className={styles.nextReason}>
+              Your main path starts at intermediate/advanced units (see <strong>Challenges</strong>). Foundation
+              (B1–B4) stays open as optional review anytime.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* ── Stats Row ── */}
       <div className={styles.statsRow}>
@@ -59,10 +86,28 @@ export default function Dashboard() {
         <div className={`card ${styles.nextCard}`}>
           <span className="badge badge-teal">Current unit</span>
           <h3 className={styles.cardTitle}>{data?.currentUnit || "B1"}</h3>
-          <p className={styles.nextReason}>Continue your lesson and complete 5 ordered challenges before the unit project.</p>
-          <button className="btn btn-primary" style={{ marginTop: 20, width: "100%", justifyContent: "center" }} onClick={() => nav("/foundation")}>
+          <p className={styles.nextReason}>
+            {/^B[1-4]$/i.test(data?.currentUnit || "B1")
+              ? "Continue your Foundation lesson, pass five ordered challenges, then the unit project."
+              : "Work through your main-path challenges in order — unlocks follow your unit progress."}
+          </p>
+          <button
+            className="btn btn-primary"
+            style={{ marginTop: 20, width: "100%", justifyContent: "center" }}
+            onClick={() => nav(continueHref)}
+          >
             Continue where you left off →
           </button>
+          {skipsFoundationTrack(placement?.level) && (
+            <button
+              type="button"
+              className="btn btn-ghost"
+              style={{ marginTop: 10, width: "100%", justifyContent: "center" }}
+              onClick={() => nav("/foundation")}
+            >
+              Foundation review (B1–B4) →
+            </button>
+          )}
         </div>
 
         {/* ── Next Challenge ── */}

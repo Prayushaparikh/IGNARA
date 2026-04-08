@@ -11,6 +11,14 @@
 .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 36px; gap: 16px; }
 .header h1 { font-size: 32px; letter-spacing: -0.02em; }
 
+.placementCard {
+  margin-bottom: 24px;
+  padding: 20px 24px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--ink-2);
+}
+
 .statsRow {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
