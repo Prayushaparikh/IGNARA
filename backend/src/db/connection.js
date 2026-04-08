@@ -11,7 +11,8 @@ const poolConfig = hasDatabaseUrl
       ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
       max: 20,
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      // Managed Postgres (e.g. Render) can be slow on first connection when cold.
+      connectionTimeoutMillis: process.env.NODE_ENV === "production" ? 30000 : 2000,
     }
   : {
       host: process.env.DB_HOST || "localhost",

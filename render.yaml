@@ -11,7 +11,10 @@ services:
     rootDir: backend
     plan: free
     buildCommand: npm install
-    startCommand: npm run migrate && npm run start
+    # Migrations can take 1–2+ minutes (large SQL). If they run in startCommand, the server
+    # isn’t listening yet and Render’s /health check times out → “deploy failed”.
+    preDeployCommand: npm run migrate
+    startCommand: npm run start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
