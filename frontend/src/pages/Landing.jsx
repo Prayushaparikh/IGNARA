@@ -83,12 +83,11 @@ export default function Landing() {
               <em className={styles.heroEm}>Simulate the job.</em>
             </h1>
             <p className={styles.heroSub}>
-              Short lessons, real practice, and hints that match <strong>your</strong> mistakes — not generic advice.
-              Foundation stays <strong>free</strong>.
+              The only platform that teaches you to write code <em>and</em> shows you what it actually feels like to work as a developer — before your first interview.
             </p>
             <div className={styles.heroCtas}>
-              <Link to="/register" className={`btn btn-primary ${styles.heroBtn}`}>
-                Create free account
+              <Link to="/quiz" className={`btn btn-primary ${styles.heroBtn}`}>
+                Take the placement quiz
               </Link>
               <button type="button" className={`btn btn-ghost ${styles.heroBtn}`} onClick={goSim}>
                 Browse simulations
@@ -142,30 +141,34 @@ export default function Landing() {
           Choose your path
         </h2>
         <div className={styles.dualGrid}>
-          <Link to="/register" className={`${styles.dualCard} ${styles.dualLearn}`}>
+          <Link to="/quiz" className={`${styles.dualCard} ${styles.dualLearn}`}>
             <div className={`${styles.dualIcon} ${styles.dualIconLearn}`}>📚</div>
             <span className={`${styles.dualTag} ${styles.dualTagLearn}`}>Learning track</span>
             <h3 className={styles.dualH}>Learn to code</h3>
-            <p className={styles.dualP}>Placement quiz, 5-minute lessons, challenges, GitHub project flow.</p>
+            <p className={styles.dualP}>A structured curriculum that diagnoses exactly why you get things wrong — not just whether you do.</p>
             <ul className={styles.dualList}>
-              <li>Start at the right level</li>
-              <li>Code DNA on every check</li>
-              <li>Foundation free forever</li>
+              <li>Placement quiz sets your exact starting point</li>
+              <li>5-minute lessons + hands-on challenges</li>
+              <li>Code DNA tracks 48 misconception types</li>
+              <li>12 portfolio projects pushed to GitHub</li>
+              <li>Foundation track is permanently free</li>
             </ul>
-            <span className={`${styles.dualCta} ${styles.dualCtaLearn}`}>Start learning →</span>
+            <span className={`${styles.dualCta} ${styles.dualCtaLearn}`}>Take the placement quiz →</span>
           </Link>
 
           <button type="button" className={`${styles.dualCard} ${styles.dualSim}`} onClick={goSim}>
             <div className={`${styles.dualIcon} ${styles.dualIconSim}`}>💼</div>
-            <span className={`${styles.dualTag} ${styles.dualTagSim}`}>Job simulations</span>
+            <span className={`${styles.dualTag} ${styles.dualTagSim}`}>Job simulation track</span>
             <h3 className={styles.dualH}>Simulate the job</h3>
-            <p className={styles.dualP}>Company-style tasks, tests, portfolio lines — like Forage, with smarter hints.</p>
+            <p className={styles.dualP}>Real engineering tasks. Real GitHub commits. A certificate for LinkedIn — and proof you can do the work.</p>
             <ul className={styles.dualList}>
-              <li>Real task briefs + editor</li>
-              <li>Certificate + LinkedIn copy</li>
-              <li>Pro feature — see pricing</li>
+              <li>No quiz required — jump straight in</li>
+              <li>5–6 sequential tasks modeled on real work</li>
+              <li>AI Tutor adapts to your known error patterns</li>
+              <li>GitHub repo auto-built as you complete tasks</li>
+              <li>Certificate + LinkedIn post on completion</li>
             </ul>
-            <span className={`${styles.dualCta} ${styles.dualCtaSim}`}>View simulations →</span>
+            <span className={`${styles.dualCta} ${styles.dualCtaSim}`}>Browse simulations →</span>
           </button>
         </div>
       </section>
@@ -180,22 +183,22 @@ export default function Landing() {
             <div className={styles.stepCard}>
               <div className={styles.stepNum}>1</div>
               <h4>Pick your path</h4>
-              <p>Quiz or simulation — we place you so you’re not bored or lost.</p>
+              <p>Take a 2-minute placement quiz or jump straight into a job simulation. We route you to the right starting point.</p>
             </div>
             <div className={styles.stepCard}>
               <div className={styles.stepNum}>2</div>
-              <h4>Type real code</h4>
-              <p>Editor + tests. Hints use your Code DNA, not a script.</p>
+              <h4>Write real code</h4>
+              <p>Monaco editor. Real test suites. AI Tutor gives hints based on your specific Code DNA error profile — not a generic script.</p>
             </div>
             <div className={styles.stepCard}>
               <div className={styles.stepNum}>3</div>
-              <h4>Ship to GitHub</h4>
-              <p>Projects become repos you can show — not just scores.</p>
+              <h4>Build your GitHub</h4>
+              <p>Every task auto-commits your solution to a real repo. Walk away with commit history, not just a score.</p>
             </div>
             <div className={styles.stepCard}>
               <div className={styles.stepNum}>4</div>
-              <h4>Show proof</h4>
-              <p>Certificate + LinkedIn-ready blurbs when you finish a sim.</p>
+              <h4>Earn your proof</h4>
+              <p>Download a verifiable certificate. Generate a LinkedIn post. Show interviewers something concrete.</p>
             </div>
           </div>
         </div>
@@ -221,9 +224,10 @@ export default function Landing() {
         <div className={styles.compareGrid}>
           <div className={styles.compareList}>
             {[
-              ["Same hints for everyone", "Hints from your Code DNA"],
-              ["Certificate only", "Certificate + GitHub story"],
-              ["Static difficulty", "Adapts to your errors"],
+              ["Same hints for everyone", "Hints from your Code DNA profile"],
+              ["Certificate only", "Certificate + real GitHub commits"],
+              ["Static difficulty", "Adaptive — reacts to your errors"],
+              ["Simulation disconnected from learning", "Sim data feeds your learning path"],
             ].map(([them, us]) => (
               <div key={them} className={styles.compareRow}>
                 <div>
@@ -426,15 +430,16 @@ export default function Landing() {
           <div className={styles.priceCard}>
             <div className={styles.priceTier}>Foundation</div>
             <div className={styles.priceAmt}>$0</div>
-            <div className={styles.pricePer}>forever</div>
+            <div className={styles.pricePer}>free forever</div>
             <ul className={styles.priceList}>
-              <li>B1–B4 units + challenges</li>
-              <li>Code DNA on checks</li>
-              <li>GitHub onboarding flow</li>
+              <li>Units B1–B4 (variables → functions)</li>
+              <li>20 micro-challenges</li>
+              <li>4 portfolio projects</li>
+              <li>Code DNA error tracking</li>
               <li>Placement quiz</li>
             </ul>
-            <Link to="/register" className={`${styles.priceBtn} ${styles.priceBtnGhost}`}>
-              Start free
+            <Link to="/quiz" className={`${styles.priceBtn} ${styles.priceBtnGhost}`}>
+              Start learning
             </Link>
           </div>
           <div className={`${styles.priceCard} ${styles.priceHighlight}`}>
@@ -442,14 +447,18 @@ export default function Landing() {
             <div className={styles.priceAmt}>
               $9<span>/mo</span>
             </div>
-            <div className={styles.pricePer}>Stripe checkout — coming soon</div>
+            <div className={styles.pricePer}>or $79/year — save 27%</div>
             <ul className={styles.priceList}>
-              <li>Full curriculum + sims</li>
-              <li>Certificates</li>
-              <li>LinkedIn post templates</li>
+              <li>Everything in Foundation</li>
+              <li>Full 12-unit curriculum</li>
+              <li>All 60 micro-challenges</li>
+              <li>Job simulation access</li>
+              <li>Verifiable certificates</li>
+              <li>LinkedIn post generator</li>
+              <li>GitHub portfolio builder</li>
             </ul>
             <button type="button" className={`${styles.priceBtn} ${styles.priceBtnSolid}`} disabled title="Stripe integration pending">
-              Join waitlist
+              Start free trial
             </button>
             <p className={styles.priceLegal}>Billed monthly when live · Cancel anytime</p>
           </div>

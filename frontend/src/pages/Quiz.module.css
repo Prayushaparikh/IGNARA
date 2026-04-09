@@ -110,3 +110,27 @@
   align-items: center; justify-content: center; gap: 16px;
   color: var(--error); text-align: center; padding: 24px;
 }
+
+/* Progress dots */
+.dotRow { display: flex; gap: 8px; align-items: center; }
+.dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--ink-3); border: 1px solid var(--border-soft);
+  transition: all 0.25s;
+}
+.dotDone  { background: var(--ember); border-color: var(--ember); }
+.dotActive {
+  width: 28px; border-radius: 99px;
+  background: var(--ember); border-color: var(--ember);
+}
+
+/* Option icon */
+.optionIcon { font-size: 20px; flex-shrink: 0; }
+
+/* Result */
+.resultWrap {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: 12px; padding: 12px 0;
+}
+.resultEmoji { font-size: 48px; margin-bottom: 4px; }
+.resultDesc  { font-size: 14px; color: var(--text-muted); line-height: 1.65; max-width: 400px; }
