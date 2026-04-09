@@ -7,6 +7,7 @@ import TryItBlock from "../components/foundation/TryItBlock.jsx";
 import LessonPageGuide from "../components/foundation/LessonPageGuide.jsx";
 import CodeWalkthrough from "../components/foundation/CodeWalkthrough.jsx";
 import LessonSwipeDeck from "../components/foundation/LessonSwipeDeck.jsx";
+import B1TextbookLesson from "../components/foundation/B1TextbookLesson.jsx";
 import { COPY } from "../copy/foundationCopy.js";
 import { B1_LESSON_PART_COUNT, getB1LessonPartForSectionId } from "../data/b1LessonData.js";
 
@@ -211,6 +212,14 @@ export default function FoundationLesson() {
   }
   if (useLessonParts && !validPart) {
     return <Navigate to={`/foundation/${unitId}/lesson/1`} replace />;
+  }
+
+  if (lesson.lessonFormat === "textbook") {
+    return (
+      <div className={styles.page}>
+        <B1TextbookLesson lesson={lesson} unitId={unitId} />
+      </div>
+    );
   }
 
   if (lesson.lessonFormat === "minimal") {

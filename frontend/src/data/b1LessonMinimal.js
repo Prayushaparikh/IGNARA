@@ -1,14 +1,13 @@
 /**
- * B1 — minimal lesson (~5 min read) for high school beginners.
- * Heavy teaching lives on the practice page (hints + helper).
+ * B1 — textbook-style lesson (~5 min read) matching the static HTML prototype.
+ * Practice page still carries hints + interactive help.
  */
 
 export const B1_LESSON_MINIMAL = {
-  lessonFormat: "minimal",
-  title: "B1 Foundations",
-  subtitle: "Variables, input, and a little math",
+  lessonFormat: "textbook",
+  title: "Variables, Input & Math",
+  subtitle: "B1: Foundations — variables, I/O, and basic math",
   readingTime: "~5 min",
-  /** Disables multi-part lesson UI */
   splitIntoParts: false,
   quickReference: [
     "input() gives text — int() before math on typed numbers",
@@ -19,54 +18,8 @@ export const B1_LESSON_MINIMAL = {
   heroIntro: {
     title: "Start here",
     blurb:
-      "A tiny tour so practice won’t feel like a cold start. Read once, tap through the animated example, then go try real problems.",
+      "Read the lesson once, step through the animated example, then go try real problems on the practice page.",
   },
-  /** Flashcard-style slides: short learn / do columns */
-  swipeSlides: [
-    {
-      id: "intro",
-      title: "Start here",
-      learn: ["Super short cards — no essay", "One animated code walk next", "Then real challenges with hints"],
-      do: ["Swipe right or tap Next", "On laptop: ← → keys"],
-    },
-    {
-      id: "variables",
-      title: "Variables",
-      learn: ["A label your program uses to remember one value"],
-      do: ["You'll write lines like this in practice:"],
-      code: "score = 10",
-    },
-    {
-      id: "io",
-      title: "Input & output",
-      learn: ["print() shows text", "input() reads typing — always as text, even if they type digits"],
-      do: ["Turn text into a number before math:"],
-      code: 'age = int(input("Age? "))',
-      alert: "Classic trap: without int(), 5 + 3 can become \"53\" instead of 8.",
-    },
-    {
-      id: "math",
-      title: "Basic math",
-      learn: ["Same spirit as class: + − * /", "// whole division, % remainder, ** power"],
-      do: ["Example output:"],
-      code: "print(10 // 3)   # 3",
-    },
-    {
-      id: "mistakes",
-      title: "Two oopsies",
-      learn: ["Everyone hits these once"],
-      do: [
-        "Forgetting int() on typed numbers → text + text instead of real math",
-        "Using = when you mean == (saving vs comparing — you'll use == soon)",
-      ],
-    },
-    {
-      id: "remember",
-      title: "Pin this",
-      learn: ["input → text until you convert", "print can take several things with commas", "Not sure? int() before math on input"],
-      do: ["Next: animated example", "Then practice — help lives there, not here"],
-    },
-  ],
   variables: {
     title: "Variables",
     body: "A variable is just a name for a value your program remembers.",
