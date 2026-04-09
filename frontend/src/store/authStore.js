@@ -2,6 +2,24 @@
 import { create } from "zustand";
 import api from "../services/api.js";
 
+function parseBackendError(err) {
+  const status = err.response?.status;
+  const raw = err.response?.data?.error;
+  if (raw) {
+    // Backend may return Zod errors as a JSON string — parse and humanise
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.map(e => e.message).join(" · ");
+      }
+    } catch (_) { /* not JSON, use as-is */ }
+    return raw;
+  }
+  if (status) return `Request failed (${status}).`;
+  if (err.code === "ECONNABORTED") return "Request timed out. Please try again.";
+  return "Unable to reach server. Check connection and try again.";
+}
+
 export const useAuthStore = create((set) => ({
   user:    JSON.parse(localStorage.getItem("dp_user") || "null"),
   token:   localStorage.getItem("dp_token") || null,
@@ -17,16 +35,7 @@ export const useAuthStore = create((set) => ({
       set({ user: data.user, token: data.token, loading: false });
       return data;
     } catch (err) {
-      const status = err.response?.status;
-      const backendError = err.response?.data?.error;
-      const message =
-        backendError ||
-        (status
-          ? `Login failed (${status}).`
-          : err.code === "ECONNABORTED"
-            ? "Request timed out. Please try again."
-            : "Unable to reach server. Check connection and try again.");
-      set({ error: message, loading: false });
+      set({ error: parseBackendError(err), loading: false });
       throw err;
     }
   },
@@ -40,16 +49,7 @@ export const useAuthStore = create((set) => ({
       set({ user: data.user, token: data.token, loading: false });
       return data;
     } catch (err) {
-      const status = err.response?.status;
-      const backendError = err.response?.data?.error;
-      const message =
-        backendError ||
-        (status
-          ? `Registration failed (${status}).`
-          : err.code === "ECONNABORTED"
-            ? "Request timed out. Please try again."
-            : "Unable to reach server. Check connection and try again.");
-      set({ error: message, loading: false });
+      set({ error: parseBackendError(err), loading: false });
       throw err;
     }
   },
