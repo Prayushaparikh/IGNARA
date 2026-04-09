@@ -10,8 +10,8 @@
     {
       "name": "backend",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["backend/src/index.js"],
-      "port": 4000
+      "runtimeArgs": ["--env-file=backend/.env", "backend/src/index.js"],
+      "port": 4001
     }
   ]
 }
