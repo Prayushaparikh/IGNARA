@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import CodeWalkthrough from "./CodeWalkthrough.jsx";
 import styles from "./B1TextbookLesson.module.css";
 import { B1_CHALLENGES_ENHANCED } from "../../data/b1ChallengeData.js";
-import { markLessonRead } from "../../utils/foundationProgress.js";
+import { useProgressStore } from "../../store/progressStore.js";
 
 const OPS = [
   { sym: "+", name: "Add", ex: "5 + 3 = 8" },
@@ -17,8 +17,9 @@ const OPS = [
  * Long-form B1 lesson matching the static HTML prototype (Variables, I/O, math, mistakes).
  */
 export default function B1TextbookLesson({ lesson, unitId }) {
-  const nChallenges = B1_CHALLENGES_ENHANCED?.length ?? 5;
-  const wt = lesson.walkthrough;
+  const nChallenges    = B1_CHALLENGES_ENHANCED?.length ?? 5;
+  const wt             = lesson.walkthrough;
+  const markLessonRead = useProgressStore((s) => s.markLessonRead);
 
   return (
     <div className={styles.container}>

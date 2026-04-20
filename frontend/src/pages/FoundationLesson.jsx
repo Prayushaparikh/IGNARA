@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import styles from "./Foundation.module.css";
 import { FOUNDATION_LESSONS } from "../data/foundationCurriculum.js";
-import { getFoundationProgress, markLessonRead } from "../utils/foundationProgress.js";
+import { useProgressStore } from "../store/progressStore.js";
 import TryItBlock from "../components/foundation/TryItBlock.jsx";
 import LessonPageGuide from "../components/foundation/LessonPageGuide.jsx";
 import CodeWalkthrough from "../components/foundation/CodeWalkthrough.jsx";
@@ -178,8 +178,11 @@ function EnhancedSection({ section, index }) {
 export default function FoundationLesson() {
   const { unitId = "b1", part } = useParams();
   const lesson = FOUNDATION_LESSONS[unitId];
-  const progress = getFoundationProgress();
-  const unitProgress = progress.units[unitId];
+
+  const { units, sync, markLessonRead } = useProgressStore();
+  useEffect(() => { if (!units) sync(); }, [units, sync]);
+
+  const unitProgress = units?.[unitId];
 
   const enhanced = Boolean(lesson?.heroIntro);
   const useLessonParts = unitId === "b1" && enhanced && lesson.splitIntoParts === true;
@@ -203,9 +206,9 @@ export default function FoundationLesson() {
     if (useLessonParts && partNum === B1_LESSON_PART_COUNT) {
       markLessonRead(unitId);
     }
-  }, [useLessonParts, partNum, unitId]);
+  }, [useLessonParts, partNum, unitId, markLessonRead]);
 
-  if (!unitProgress?.unlocked) return <Navigate to="/foundation" replace />;
+  if (units && !unitProgress?.unlocked) return <Navigate to="/foundation" replace />;
   if (!lesson) return <Navigate to="/foundation" replace />;
   if (useLessonParts && partNum === 3) {
     return <Navigate to={`/foundation/${unitId}/lesson/2`} replace />;

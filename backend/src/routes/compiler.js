@@ -76,11 +76,24 @@ router.post("/run", authMiddleware, async (req, res, next) => {
 });
 
 // POST /api/compiler/submit  — run against challenge test cases
+// Accepts either: { challengeId: uuid }  OR  { unitCode: "B1", position: 1 }
 router.post("/submit", authMiddleware, async (req, res, next) => {
   try {
-    const { code, language, challengeId } = req.body;
+    const { code, language, challengeId, unitCode, position } = req.body;
 
-    const { rows } = await query("SELECT * FROM challenges WHERE id = $1", [challengeId]);
+    let challengeRows;
+    if (challengeId) {
+      ({ rows: challengeRows } = await query("SELECT * FROM challenges WHERE id = $1", [challengeId]));
+    } else if (unitCode && position) {
+      ({ rows: challengeRows } = await query(
+        "SELECT * FROM challenges WHERE unit_code = $1 AND unit_order_index = $2",
+        [unitCode.toUpperCase(), Number(position)]
+      ));
+    } else {
+      return res.status(400).json({ error: "Provide challengeId or unitCode+position" });
+    }
+
+    const rows = challengeRows;
     if (!rows[0]) return res.status(404).json({ error: "Challenge not found" });
 
     const challenge  = rows[0];
