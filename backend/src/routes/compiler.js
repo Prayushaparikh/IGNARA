@@ -39,6 +39,7 @@ async function runInSandbox(code, language, stdin = "") {
     "--cpus=0.5",
     "--network=none",           // ← no internet access
     "--read-only",
+    "--tmpfs /tmp",             // writable in-memory tmpfs; needed for C++ (g++ -o /tmp/a.out)
     `--volume="${tmpDir}:/code:ro"`,
     `--workdir="/code"`,
     // --timeout is not a valid docker flag; Node's execAsync timeout handles the wall-clock limit

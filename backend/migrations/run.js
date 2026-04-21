@@ -1,9 +1,15 @@
+import dotenv from "dotenv";
 import { readFileSync, readdirSync } from "fs";
-import { pool } from "../src/db/connection.js";
 import { fileURLToPath } from "url";
 import path from "path";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Load .env before the pool is initialised (static imports are hoisted,
+// so pool must be loaded via dynamic import after dotenv.config runs).
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
+
+const { pool } = await import("../src/db/connection.js");
 
 function loadSql(filename) {
   return readFileSync(path.join(__dirname, filename), "utf-8");
