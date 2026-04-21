@@ -83,10 +83,38 @@ export const B1_LESSON_MINIMAL = {
     label: "Start Challenge 1 →",
   },
 
+  // ── Section 5 data: Division & Decimal Formatting (backs C4 / Simple Average)
+  divisionSection: {
+    id: "division",
+    title: "Division & Decimal Output",
+    body: "Python has two division operators and they give very different answers. Knowing which one to use — and how to format the result — is the difference between a program that works and one that silently gives wrong numbers.",
+    divisionTable: [
+      { op: "/",  label: "Float division",   example: "7 / 2",   result: "3.5  ← keeps the decimal" },
+      { op: "//", label: "Floor division",   example: "7 // 2",  result: "3    ← drops the decimal"  },
+      { op: "%",  label: "Remainder",        example: "7 % 2",   result: "1    ← what's left over"   },
+    ],
+    warning: {
+      title: "Use / for averages and real-world calculations",
+      body: "If you write (3 + 4 + 5) // 3 you get 4 — which looks right here but fails the moment the average is not a whole number. Always use / when the answer might be a decimal.",
+      code: "# WRONG — floor division silently drops the decimal:\navg = (2 + 2 + 3) // 3    # gives 2, not 2.333...\n\n# RIGHT — float division keeps it:\navg = (2 + 2 + 3) / 3     # gives 2.3333...",
+    },
+    formatting: {
+      title: "Taming messy floats with f-strings",
+      body: "Python raw float output can look like 2.3333333333333335. Use the :.Nf specifier to round to exactly N decimal places.",
+      code: 'avg = 7 / 3              # 2.3333333333333335\nprint(f\'{avg:.1f}\')       # 2.3  ← 1 decimal\nprint(f\'{avg:.2f}\')       # 2.33 ← 2 decimals',
+    },
+    tip: {
+      label: "💡 The full C4 pattern",
+      body: "Three numbers in → average out → formatted to 1 decimal.",
+      extra: "a, b, c = map(int, input().split())\nprint(f'{(a + b + c) / 3:.1f}')",
+    },
+  },
+
   quickReference: [
-    "input() gives text — int() before math on typed numbers",
-    "print(a, b) prints both with a space",
-    "+ − * / // % ** — same spirit as math class",
+    "input() gives text — use map(int, input().split()) for multiple numbers",
+    "/ keeps decimals (float division); // drops them (floor division)",
+    "f'{x:.1f}' rounds to 1 decimal — f'{x:.2f}' rounds to 2",
+    "a, b = map(int, input().split()) reads two numbers from one line",
     "= stores a value; == compares (coming up in B2)",
   ],
 };

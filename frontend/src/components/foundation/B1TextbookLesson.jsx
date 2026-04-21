@@ -205,6 +205,65 @@ export default function B1TextbookLesson({ lesson, unitId }) {
         </div>
       </section>
 
+      {/* ── Section 5: Division & Decimal Formatting ── */}
+      <section className={styles.section}>
+        <h2>
+          <span className={styles.num}>5</span> Division &amp; Decimal Output
+        </h2>
+        <p>Python has two division operators. They give very different answers.</p>
+
+        <div className={styles.codeBlock}>
+          <pre>
+            <code>
+              7 / 2{" "}
+              <span className={styles.comment}># → 3.5  (float division — keeps the decimal)</span>
+              {"\n"}
+              7 // 2{" "}
+              <span className={styles.comment}># → 3    (floor division — drops the decimal)</span>
+              {"\n"}
+              7 % 2{" "}
+              <span className={styles.comment}># → 1    (remainder — what's left over)</span>
+            </code>
+          </pre>
+        </div>
+
+        <div className={styles.warning}>
+          <div className={styles.warningIcon} aria-hidden>⚠️</div>
+          <h3>Use / for averages — never //</h3>
+          <p>
+            <code className={styles.inlineCode}>(2 + 2 + 3) // 3</code> gives{" "}
+            <code className={styles.inlineCode}>2</code>, not{" "}
+            <code className={styles.inlineCode}>2.333…</code>.
+            {" "}Floor division silently truncates — your answer looks close but is wrong.
+          </p>
+        </div>
+
+        <p>Raw float output can look messy. Use an f-string to control decimal places:</p>
+        <div className={styles.codeBlock}>
+          <pre>
+            <code>
+              avg = 7 / 3{" "}
+              <span className={styles.comment}># 2.3333333333333335</span>
+              {"\n\n"}
+              print(f&quot;&#123;avg:.1f&#125;&quot;){" "}
+              <span className={styles.comment}># 2.3  (exactly 1 decimal)</span>
+              {"\n"}
+              print(f&quot;&#123;avg:.2f&#125;&quot;){" "}
+              <span className={styles.comment}># 2.33 (exactly 2 decimals)</span>
+            </code>
+          </pre>
+        </div>
+
+        <div className={styles.example}>
+          <div className={styles.exampleTitle}>💡 C4 Pattern — Simple Average</div>
+          <p>Three numbers in, average out, formatted to one decimal.</p>
+          <div className={styles.monoLines}>
+            a, b, c = map(int, input().split()){"\n"}
+            print(f&quot;&#123;(a + b + c) / 3:.1f&#125;&quot;)
+          </div>
+        </div>
+      </section>
+
       {wt?.code && wt?.steps?.length > 0 && (
         <div className={styles.walkthroughWrap}>
           <CodeWalkthrough title={wt.title} subtitle={wt.subtitle} code={wt.code} steps={wt.steps} />
