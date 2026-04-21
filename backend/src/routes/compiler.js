@@ -41,7 +41,7 @@ async function runInSandbox(code, language, stdin = "") {
     "--read-only",
     `--volume="${tmpDir}:/code:ro"`,
     `--workdir="/code"`,
-    `--timeout=${TIMEOUT_SECS}`,
+    // --timeout is not a valid docker flag; Node's execAsync timeout handles the wall-clock limit
     config.image,
     "sh", "-c", `"${stdinFlag} ${config.cmd(`/code/solution.${config.ext}`)}"`,
   ].join(" ");
@@ -137,7 +137,7 @@ router.post("/submit", authMiddleware, async (req, res, next) => {
     const { rows: sub } = await query(
       `INSERT INTO submissions (user_id, challenge_id, language, code, passed, test_results)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-      [req.user.id, challengeId, language, code, allPassed, JSON.stringify(results)]
+      [req.user.id, challenge.id, language, code, allPassed, JSON.stringify(results)]
     );
 
     // Patent #2 (MVP): if failed, log the challenge's sensor tag as a misconception signal
@@ -148,7 +148,7 @@ router.post("/submit", authMiddleware, async (req, res, next) => {
       await query(
         `INSERT INTO submission_misconceptions (submission_id, user_id, challenge_id, tag)
          VALUES ($1, $2, $3, $4)`,
-        [sub[0].id, req.user.id, challengeId, tag]
+        [sub[0].id, req.user.id, challenge.id, tag]
       );
 
       await query(
