@@ -2,7 +2,7 @@
 import express from "express";
 import { authMiddleware } from "../middleware/auth.js";
 import { query } from "../db/connection.js";
-import { getCurrentUnit, getUserUnitProgress } from "../utils/unitProgress.js";
+import { getCurrentUnit, getUserUnitProgress, ensureUserUnitProgress } from "../utils/unitProgress.js";
 
 const router = express.Router();
 
@@ -71,6 +71,9 @@ router.patch("/foundation/:unitCode", authMiddleware, async (req, res, next) => 
       setClauses.push(`project_passed = $${params.length}`);
     }
     if (!setClauses.length) return res.status(400).json({ error: "Nothing to update" });
+
+    // Guarantee the row exists before updating (new users may not have rows yet)
+    await ensureUserUnitProgress(uid);
 
     await query(
       `UPDATE user_unit_progress SET ${setClauses.join(", ")}, updated_at = NOW()
