@@ -117,4 +117,62 @@ export const B1_LESSON_MINIMAL = {
     "a, b = map(int, input().split()) reads two numbers from one line",
     "= stores a value; == compares (coming up in B2)",
   ],
+
+  /** Animated line-by-line walkthrough — rendered after the written lesson in B1TextbookLesson */
+  walkthrough: {
+    title: "Watch this little program run",
+    subtitle: "Tap Next — one line lights up at a time.",
+    code: `name = "Alex"
+a = int("5")
+b = int("3")
+print("Hi,", name)
+print(a + b)`,
+    steps: [
+      {
+        lineIndex: 0,
+        caption: 'Python stores the text "Alex" under the label name.',
+        variables: [{ name: "name", value: '"Alex"' }],
+        output: "",
+      },
+      {
+        lineIndex: 1,
+        caption: 'int("5") turns the characters 5 into the number 5 — now a can do math.',
+        variables: [
+          { name: "name", value: '"Alex"' },
+          { name: "a", value: "5" },
+        ],
+        output: "",
+      },
+      {
+        lineIndex: 2,
+        caption: "Same idea for b — both are real integers now.",
+        variables: [
+          { name: "name", value: '"Alex"' },
+          { name: "a", value: "5" },
+          { name: "b", value: "3" },
+        ],
+        output: "",
+      },
+      {
+        lineIndex: 3,
+        caption: "print sends text to the screen. Commas add a space between pieces.",
+        variables: [
+          { name: "name", value: '"Alex"' },
+          { name: "a", value: "5" },
+          { name: "b", value: "3" },
+        ],
+        output: "Hi, Alex",
+      },
+      {
+        lineIndex: 4,
+        caption: 'Now the numbers add — 5 + 3 is 8, not "53".',
+        variables: [
+          { name: "name", value: '"Alex"' },
+          { name: "a", value: "5" },
+          { name: "b", value: "3" },
+        ],
+        output: "Hi, Alex\n8",
+      },
+    ],
+  },
 };
