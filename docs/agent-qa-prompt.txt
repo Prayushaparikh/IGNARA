@@ -1,0 +1,56 @@
+Copy everything below the line into a new Cursor / Claude task. Repo root: friendly-euclid (backend + frontend).
+
+---BEGIN AGENT PROMPT---
+
+You are working in the Ignara / dreampath-codex monorepo worktree (Node ESM backend, React frontend). Docker Desktop must be running for code execution (POST /api/compiler/submit uses `docker run`).
+
+## Environment
+- Backend: `http://localhost:${PORT:-4000}` — use the `PORT` value from `backend/.env` if not 4000.
+- API prefix: `/api`
+- Obtain JWT: `POST /api/auth/register` or `POST /api/auth/login` with JSON `{ "email", "password", "fullName" }` (register) — capture `token` from response.
+- Export for curl: `export API=http://localhost:4000/api` and `export TOKEN='<jwt>'`
+
+## Task 1 — Misconception pipeline (B1 challenge position 3)
+Goal: failed submission returns `tutor: { tag, title, hint }` with tag `type-conversion-missing` when the failure is clearly “forgot int() / str vs int” (e.g. `n = input()` then `n % 2`).
+
+1. Ensure user has B1 lesson unlocked: `PATCH $API/progress/foundation/b1` with header `Authorization: Bearer $TOKEN` and body `{"lessonRead":true}`.
+2. Submit wrong code for **B1 position 3** (Odd or Even — needs `int(input())`):
+   ```bash
+   curl -sS -X POST "$API/compiler/submit" \
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+     -d '{"code":"n = input()\nif n % 2 == 0:\n    print(\"Even\")\nelse:\n    print(\"Odd\")","language":"python","unitCode":"B1","position":3}'
+   ```
+3. Assert JSON: `passed` is false, `tutor` is non-null, `tutor.tag` is `type-conversion-missing`, `tutor.hint` mentions input/text conversion (copy from DB `misconception_tags.default_hint`).
+
+If `tutor` is null: check DB migration `004_patent2_tutor.sql` applied and `challenges.sensor_tag` for B1 order 3 is set (see `009_b1_curriculum_align.sql`). Check Docker stderr reaches the API `results[].stderr`.
+
+## Task 2 — dotenv for migrations
+From `backend/` run `npm run migrate`. It must load `backend/.env` without `NODE_OPTIONS=--env-file=...`. Implementation: `migrations/run.js` uses `dotenv.config({ path: fileURLToPath(new URL("../.env", import.meta.url)) })` (or equivalent). If migrate still fails, print `process.cwd()` and confirm `.env` exists beside `backend/src/`.
+
+## Task 3 — Docker / C++ sandbox
+In `backend/src/routes/compiler.js`, `docker run` already includes `--tmpfs /tmp` for g++ output. If C++ still fails on macOS, confirm Docker Desktop is running (`docker run hello-world`). Optional: increase memory flag only if OOM appears in logs.
+
+## Task 4 — Full compile loop + progress
+1. Register or login; set `TOKEN`.
+2. `PATCH $API/progress/foundation/b1` body `{"lessonRead":true}`.
+3. **B1 C1** is “Add Two Numbers” (stdin like `5 3`, expected sum `8`), not Hello World. Submit passing solution:
+   ```python
+   a, b = map(int, input().split())
+   print(a + b)
+   ```
+   ```bash
+   curl -sS -X POST "$API/compiler/submit" \
+     -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+     -d '{"code":"a, b = map(int, input().split())\nprint(a + b)","language":"python","unitCode":"B1","position":1}'
+   ```
+4. Assert `passed: true`.
+5. `GET $API/progress/foundation` with same auth — assert `units.b1.challenges["1"] === true` (object keys are strings).
+
+## Task 5 — Restart Docker (human)
+If sandboxes hang: Quit Docker Desktop from the menu bar, reopen, wait until green. No code change.
+
+## Deliverables
+- Paste curl outputs (redact token) for failed B1/3 tutor and successful B1/1 + progress JSON.
+- If anything fails, trace: Docker → compiler route → Postgres `challenges` row for `unit_code='B1' AND unit_order_index=3`.
+
+---END AGENT PROMPT---

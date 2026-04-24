@@ -21,6 +21,23 @@ const LANG_CONFIG = {
 const TIMEOUT_SECS = 10;
 const MEM_LIMIT    = "128m";
 
+/**
+ * B1 challenges carry a primary sensor_tag (e.g. modulo-confusion for Odd/Even).
+ * If the runtime error clearly indicates missing int()/str-vs-int, surface
+ * type-conversion-missing so the tutor hint matches what actually broke.
+ */
+function inferMisconceptionTag(challenge, results) {
+  const base = challenge.sensor_tag;
+  if (!base) return null;
+  const blob = results.map((r) => `${r.stderr || ""}\n${r.actual || ""}`).join("\n");
+  const typeConversionSignals =
+    /unsupported operand type\(s\) for %|not all arguments converted during string formatting|invalid literal for int\(\)|could not convert string to float|TypeError:.*\bstr\b.*\bint\b|unsupported operand type\(s\) for [^:]+:\s*['"]str['"]/i;
+  if (challenge.unit_code === "B1" && typeConversionSignals.test(blob)) {
+    return "type-conversion-missing";
+  }
+  return base;
+}
+
 async function runInSandbox(code, language, stdin = "") {
   const config  = LANG_CONFIG[language];
   if (!config) throw new Error(`Unsupported language: ${language}`);
@@ -141,36 +158,37 @@ router.post("/submit", authMiddleware, async (req, res, next) => {
       [req.user.id, challenge.id, language, code, allPassed, JSON.stringify(results)]
     );
 
-    // Patent #2 (MVP): if failed, log the challenge's sensor tag as a misconception signal
+    // Patent #2 (MVP): if failed, log misconception signal (tag may be inferred from stderr)
     let tutor = null;
-    if (!allPassed && challenge.sensor_tag) {
-      const tag = challenge.sensor_tag;
+    if (!allPassed) {
+      const tag = inferMisconceptionTag(challenge, results);
+      if (tag) {
+        await query(
+          `INSERT INTO submission_misconceptions (submission_id, user_id, challenge_id, tag)
+           VALUES ($1, $2, $3, $4)`,
+          [sub[0].id, req.user.id, challenge.id, tag]
+        );
 
-      await query(
-        `INSERT INTO submission_misconceptions (submission_id, user_id, challenge_id, tag)
-         VALUES ($1, $2, $3, $4)`,
-        [sub[0].id, req.user.id, challenge.id, tag]
-      );
+        await query(
+          `INSERT INTO user_misconception_profile (user_id, tag, times_seen, last_seen_at)
+           VALUES ($1, $2, 1, NOW())
+           ON CONFLICT (user_id, tag)
+           DO UPDATE SET times_seen = user_misconception_profile.times_seen + 1, last_seen_at = NOW()`,
+          [req.user.id, tag]
+        );
 
-      await query(
-        `INSERT INTO user_misconception_profile (user_id, tag, times_seen, last_seen_at)
-         VALUES ($1, $2, 1, NOW())
-         ON CONFLICT (user_id, tag)
-         DO UPDATE SET times_seen = user_misconception_profile.times_seen + 1, last_seen_at = NOW()`,
-        [req.user.id, tag]
-      );
+        const { rows: tagRows } = await query(
+          "SELECT tag, title, default_hint FROM misconception_tags WHERE tag = $1",
+          [tag]
+        );
 
-      const { rows: tagRows } = await query(
-        "SELECT tag, title, default_hint FROM misconception_tags WHERE tag = $1",
-        [tag]
-      );
-
-      if (tagRows[0]) {
-        tutor = {
-          tag: tagRows[0].tag,
-          title: tagRows[0].title,
-          hint: tagRows[0].default_hint,
-        };
+        if (tagRows[0]) {
+          tutor = {
+            tag: tagRows[0].tag,
+            title: tagRows[0].title,
+            hint: tagRows[0].default_hint,
+          };
+        }
       }
     }
 

@@ -7,7 +7,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Load .env before the pool is initialised (static imports are hoisted,
 // so pool must be loaded via dynamic import after dotenv.config runs).
-dotenv.config({ path: path.resolve(__dirname, "../.env") });
+// Resolve from this file's URL so it works regardless of process cwd.
+dotenv.config({ path: fileURLToPath(new URL("../.env", import.meta.url)) });
 
 const { pool } = await import("../src/db/connection.js");
 
