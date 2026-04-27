@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const FALLBACK_API_URL = "http://54.237.236.205:4000";
+/** When VITE_API_URL is unset, use production API (not a stale EC2 IP). */
+const FALLBACK_API_URL = "https://ignara-api.onrender.com";
 const configuredApiUrl = import.meta.env.VITE_API_URL || FALLBACK_API_URL;
 const isHttpsPage = typeof window !== "undefined" && window.location.protocol === "https:";
 const isConfiguredUrlInsecure = configuredApiUrl.startsWith("http://");

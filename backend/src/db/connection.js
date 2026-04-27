@@ -27,14 +27,32 @@ const poolConfig = hasDatabaseUrl
 
 export const pool = new Pool(poolConfig);
 
-export async function connectDB() {
-  try {
-    await pool.query("SELECT NOW()");
-    logger.info("✅ PostgreSQL connected");
-  } catch (err) {
-    logger.error("❌ DB connection failed:", err.message);
-    process.exit(1);
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+/** Retries help Render free Postgres + web waking from sleep (first connect can fail or time out). */
+export async function connectDB(maxAttempts = 8) {
+  let lastErr;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await pool.query("SELECT NOW()");
+      logger.info("✅ PostgreSQL connected");
+      return;
+    } catch (err) {
+      lastErr = err;
+      logger.error(
+        `❌ DB connection failed (attempt ${attempt}/${maxAttempts}):`,
+        err.message
+      );
+      if (attempt < maxAttempts) {
+        const delay = Math.min(2500 * attempt, 15000);
+        await sleep(delay);
+      }
+    }
   }
+  logger.error("❌ DB connection failed after all retries:", lastErr?.message);
+  process.exit(1);
 }
 
 // Helper: tagged template for safe queries

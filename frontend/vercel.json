@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "http://54.237.236.205:4000/api/$1"
+      "destination": "https://ignara-api.onrender.com/api/$1"
     },
     {
       "source": "/(.*)",

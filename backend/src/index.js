@@ -78,5 +78,7 @@ app.use((err, req, res, _next) => {
 });
 
 connectDB().then(() => {
-  app.listen(PORT, () => logger.info(`🚀 API running on port ${PORT}`));
+  app.listen(PORT, "0.0.0.0", () =>
+    logger.info(`🚀 API running on port ${PORT}`)
+  );
 });
