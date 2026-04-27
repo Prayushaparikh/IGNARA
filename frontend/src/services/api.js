@@ -1,14 +1,19 @@
 import axios from "axios";
 
-const FALLBACK_API_URL = "http://54.237.236.205:4000";
-const configuredApiUrl = import.meta.env.VITE_API_URL || FALLBACK_API_URL;
+// On HTTPS (Vercel production): always use the same-origin /api proxy.
+// vercel.json rewrites /api/(.*)  →  https://ignara-api.onrender.com/api/$1
+// This avoids mixed-content errors AND removes the need for CORS on Render.
+//
+// Local dev should prefer same-origin /api so Vite proxy handles backend routing.
+// This avoids CORS/host mismatch issues (localhost vs 127.0.0.1, stale API host, etc).
+// Opt in to direct backend calls only when explicitly requested.
 const isHttpsPage = typeof window !== "undefined" && window.location.protocol === "https:";
-const isConfiguredUrlInsecure = configuredApiUrl.startsWith("http://");
-
-// On HTTPS deployments, avoid mixed-content by using same-origin /api proxy.
-const baseURL = isHttpsPage && isConfiguredUrlInsecure
-  ? "/api"
-  : `${configuredApiUrl}/api`;
+const DEV_API_URL  = import.meta.env.VITE_API_URL;
+const USE_DIRECT_API = import.meta.env.VITE_API_MODE === "direct";
+const baseURL =
+  isHttpsPage
+    ? "/api"
+    : (USE_DIRECT_API && DEV_API_URL ? `${DEV_API_URL}/api` : "/api");
 
 const api = axios.create({
   baseURL,
@@ -33,7 +38,8 @@ api.interceptors.response.use(
     if (err.response?.status === 401 && !isAuthRequest) {
       localStorage.removeItem("dp_token");
       localStorage.removeItem("dp_user");
-      window.location.href = "/login";
+      const loginPath = window.location.protocol === "https:" ? "/login" : "/#/login";
+      window.location.href = loginPath;
     }
     return Promise.reject(err);
   }
