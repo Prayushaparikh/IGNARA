@@ -4,7 +4,7 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import styles from "./Foundation.module.css";
 import pro from "./FoundationProject.module.css";
 import { PROJECT_CALCULATOR_STARTERS } from "../data/foundationCurriculum.js";
-import { getFoundationProgress, markProjectDone } from "../utils/foundationProgress.js";
+import { useProgressStore } from "../store/progressStore.js";
 import { COPY } from "../copy/foundationCopy.js";
 import { useAuthStore } from "../store/authStore.js";
 import ProjectOutputTerminal from "../components/project/ProjectOutputTerminal.jsx";
@@ -42,8 +42,8 @@ export default function FoundationProject() {
   const user = useAuthStore((s) => s.user);
   const studentName = user?.name || "";
 
-  const progress = getFoundationProgress();
-  const unitProgress = progress.units[unitId];
+  const { units, sync, markProjectDone } = useProgressStore();
+  const unitProgress = units?.[unitId];
   const allChallengesDone = [1, 2, 3, 4, 5].every((n) => unitProgress?.challenges?.[String(n)]);
   const savedGh = loadGhState(unitId);
 
@@ -67,6 +67,11 @@ export default function FoundationProject() {
   const [revealedHints, setRevealedHints] = useState(1);
 
   const nextUnit = { b1: "b2", b2: "b3", b3: "b4" }[unitId];
+
+  // Fetch real progress from DB on mount
+  useEffect(() => {
+    if (!units) sync();
+  }, [units, sync]);
 
   useEffect(() => {
     setCode(PROJECT_CALCULATOR_STARTERS[language] || PROJECT_CALCULATOR_STARTERS.Python);
@@ -151,8 +156,8 @@ export default function FoundationProject() {
     });
   };
 
-  if (!unitProgress?.unlocked) return <Navigate to="/foundation" replace />;
-  if (!allChallengesDone) return <Navigate to={`/foundation/${unitId}/practice/1`} replace />;
+  if (units && !unitProgress?.unlocked) return <Navigate to="/foundation" replace />;
+  if (units && !allChallengesDone) return <Navigate to={`/foundation/${unitId}/practice/1`} replace />;
 
   const helperHint = githubFlowActive
     ? COPY.project.helperDragSteps[Math.min(4, Math.max(1, ghDragStep))]
@@ -468,8 +473,8 @@ export default function FoundationProject() {
         <button
           type="button"
           className="btn btn-primary"
-          onClick={() => {
-            markProjectDone(unitId);
+          onClick={async () => {
+            await markProjectDone(unitId);
             window.location.assign("#/foundation");
           }}
         >
