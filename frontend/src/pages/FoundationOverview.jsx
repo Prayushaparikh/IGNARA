@@ -2,15 +2,21 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Foundation.module.css";
 import { FOUNDATION_UNITS } from "../data/foundationCurriculum.js";
-import { getFoundationProgress, getUnitCompletion } from "../utils/foundationProgress.js";
+import { getUnitCompletion } from "../utils/foundationProgress.js";
+import { useProgressStore } from "../store/progressStore.js";
 import { skipsFoundationTrack } from "../utils/placement.js";
 import api from "../services/api.js";
 
 export default function FoundationOverview() {
   const nav = useNavigate();
-  const progress = getFoundationProgress();
+  const { units, sync } = useProgressStore();
   const [placementLevel, setPlacementLevel] = useState(null);
   const [placementLoading, setPlacementLoading] = useState(true);
+
+  // Fetch real progress from DB on mount
+  useEffect(() => {
+    if (!units) sync();
+  }, [units, sync]);
 
   useEffect(() => {
     api
@@ -57,7 +63,7 @@ export default function FoundationOverview() {
 
       <div className={styles.unitGrid}>
         {FOUNDATION_UNITS.map((unit) => {
-          const unitProgress = progress.units[unit.id];
+          const unitProgress = units?.[unit.id] || {};
           const completion = getUnitCompletion(unitProgress);
           const unlocked = optionalReview || unitProgress.unlocked;
           const statusLabel = optionalReview ? "Open (review)" : unlocked ? "Unlocked" : "Locked";

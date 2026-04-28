@@ -38,10 +38,10 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/login"    element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/quiz"     element={<Quiz />} />
 
       <Route element={<Layout />}>
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-        <Route path="/quiz"      element={<PrivateRoute><Quiz /></PrivateRoute>} />
         <Route path="/quiz/results" element={<PrivateRoute><QuizResults /></PrivateRoute>} />
         <Route path="/careers"      element={<PrivateRoute><Careers /></PrivateRoute>} />
         <Route path="/careers/:id"  element={<PrivateRoute><CareerDetail /></PrivateRoute>} />

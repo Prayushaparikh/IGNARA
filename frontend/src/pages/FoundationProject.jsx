@@ -4,7 +4,7 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import styles from "./Foundation.module.css";
 import pro from "./FoundationProject.module.css";
 import { PROJECT_CALCULATOR_STARTERS } from "../data/foundationCurriculum.js";
-import { getFoundationProgress, markProjectDone } from "../utils/foundationProgress.js";
+import { useProgressStore } from "../store/progressStore.js";
 import { COPY } from "../copy/foundationCopy.js";
 import { useAuthStore } from "../store/authStore.js";
 import ProjectOutputTerminal from "../components/project/ProjectOutputTerminal.jsx";
@@ -42,8 +42,8 @@ export default function FoundationProject() {
   const user = useAuthStore((s) => s.user);
   const studentName = user?.name || "";
 
-  const progress = getFoundationProgress();
-  const unitProgress = progress.units[unitId];
+  const { units, sync, markProjectDone } = useProgressStore();
+  const unitProgress = units?.[unitId];
   const allChallengesDone = [1, 2, 3, 4, 5].every((n) => unitProgress?.challenges?.[String(n)]);
   const savedGh = loadGhState(unitId);
 
@@ -62,8 +62,16 @@ export default function FoundationProject() {
   const [projectResult, setProjectResult] = useState(null);
   const [mobilePanel, setMobilePanel] = useState("checklist");
   const [focusMode, setFocusMode] = useState(false);
+  const [checkedItems, setCheckedItems] = useState(() => new Set());
+  const [hintsOpen, setHintsOpen] = useState(false);
+  const [revealedHints, setRevealedHints] = useState(1);
 
   const nextUnit = { b1: "b2", b2: "b3", b3: "b4" }[unitId];
+
+  // Fetch real progress from DB on mount
+  useEffect(() => {
+    if (!units) sync();
+  }, [units, sync]);
 
   useEffect(() => {
     setCode(PROJECT_CALCULATOR_STARTERS[language] || PROJECT_CALCULATOR_STARTERS.Python);
@@ -148,8 +156,8 @@ export default function FoundationProject() {
     });
   };
 
-  if (!unitProgress?.unlocked) return <Navigate to="/foundation" replace />;
-  if (!allChallengesDone) return <Navigate to={`/foundation/${unitId}/practice/1`} replace />;
+  if (units && !unitProgress?.unlocked) return <Navigate to="/foundation" replace />;
+  if (units && !allChallengesDone) return <Navigate to={`/foundation/${unitId}/practice/1`} replace />;
 
   const helperHint = githubFlowActive
     ? COPY.project.helperDragSteps[Math.min(4, Math.max(1, ghDragStep))]
@@ -158,24 +166,104 @@ export default function FoundationProject() {
   const ext =
     language === "Python" ? "py" : language === "C++" ? "cpp" : "java";
 
+  const CHECKLIST_STEPS = [
+    { title: "Print a welcome message", desc: "Use print() to show a header" },
+    { title: "Read two numbers", desc: "Use int(input()) for each number" },
+    { title: "Ask for the operator", desc: 'Ask: "+ - * /" and store it' },
+    { title: "Handle all 4 operations", desc: "Use if/elif to pick +, -, *, /" },
+    { title: "Prevent divide-by-zero", desc: "Check if second number is 0" },
+    { title: "Print the result nicely", desc: 'e.g. "5 + 3 = 8"' },
+  ];
+
+  const HINT_STEPS = [
+    { title: "Print a welcome message", desc: "Start with a friendly header.", code: 'print("=== Simple Calculator ===")\nprint()' },
+    { title: "Read two numbers", desc: "Convert input to int so you can do math.", code: "num1 = int(input(\"Enter first number: \"))\nnum2 = int(input(\"Enter second number: \"))" },
+    { title: "Ask for the operator", desc: "Store it as a string.", code: 'op = input("Enter operator (+, -, *, /): ")' },
+    { title: "Handle each operation", desc: "Use if/elif to pick the right math.", code: 'if op == "+":\n    result = num1 + num2\nelif op == "-":\n    result = num1 - num2\nelif op == "*":\n    result = num1 * num2\nelif op == "/":\n    result = num1 / num2\nelse:\n    print("Unknown operator!")\n    exit()' },
+    { title: "Prevent divide-by-zero", desc: "Add a check before dividing.", code: 'elif op == "/":\n    if num2 == 0:\n        print("Error: Cannot divide by zero!")\n    else:\n        result = num1 / num2' },
+    { title: "Print the result", desc: "Show it in a clean format.", code: 'print(f"\\n{num1} {op} {num2} = {result}")' },
+  ];
+
+  const toggleCheck = (idx) => {
+    setCheckedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  };
+
   const checklist = (
     <>
       <div className={pro.proCardHead}>
-        <span className={pro.proCardIcon} aria-hidden>
-          ✅
-        </span>
-        <h3 className={pro.proCardTitle}>Project checklist</h3>
+        <span className={pro.proCardIcon} aria-hidden>💪</span>
+        <h3 className={pro.proCardTitle}>Try it yourself first!</h3>
       </div>
-      <div className={pro.proRequirements}>
-        <div className={pro.proRequirementsTitle}>Ship these behaviors</div>
-        <ul className={pro.proChecklist}>
-          <li>Read two numbers and operator input.</li>
-          <li>Handle +, −, ×, and ÷ operations.</li>
-          <li>Show friendly errors for an invalid operator.</li>
-          <li>Prevent division-by-zero crashes.</li>
-          <li>Optional: short README with how to run.</li>
-        </ul>
+      <p className={pro.proChecklistLead}>Check off each step as you build it. You know everything you need!</p>
+
+      <div className={pro.proChecklistInteractive}>
+        {CHECKLIST_STEPS.map((step, i) => {
+          const done = checkedItems.has(i);
+          return (
+            <button
+              key={i}
+              type="button"
+              className={`${pro.proCheckItem} ${done ? pro.proCheckItemDone : ""}`}
+              onClick={() => toggleCheck(i)}
+            >
+              <span className={`${pro.proCheckBox} ${done ? pro.proCheckBoxDone : ""}`}>
+                {done ? "✓" : ""}
+              </span>
+              <span className={pro.proCheckContent}>
+                <span className={pro.proCheckTitle}>{step.title}</span>
+                <span className={pro.proCheckDesc}>{step.desc}</span>
+              </span>
+            </button>
+          );
+        })}
       </div>
+
+      {/* Progressive hints */}
+      <div className={`${pro.proGlass} ${pro.proHintCard}`} style={{ marginTop: 16 }}>
+        <div className={pro.proCardHead}>
+          <span className={pro.proCardIcon} aria-hidden>💡</span>
+          <h3 className={pro.proCardTitle}>Need help?</h3>
+        </div>
+        <p className={pro.proChecklistLead}>Stuck? We'll reveal one step at a time.</p>
+        {!hintsOpen ? (
+          <button
+            type="button"
+            className={pro.proHintTrigger}
+            onClick={() => setHintsOpen(true)}
+          >
+            <span>📖</span>
+            <span>Show me how to build it</span>
+          </button>
+        ) : (
+          <div className={pro.proHintSteps}>
+            {HINT_STEPS.slice(0, revealedHints).map((hint, i) => (
+              <div key={i} className={pro.proHintStep} style={{ animationDelay: `${i * 60}ms` }}>
+                <span className={pro.proHintNum}>{i + 1}</span>
+                <div className={pro.proHintBody}>
+                  <strong className={pro.proHintTitle}>{hint.title}</strong>
+                  <p className={pro.proHintDesc}>{hint.desc}</p>
+                  <pre className={pro.proHintCode}>{hint.code}</pre>
+                  {i === revealedHints - 1 && revealedHints < HINT_STEPS.length && (
+                    <button
+                      type="button"
+                      className={pro.proNextHintBtn}
+                      onClick={() => setRevealedHints((n) => n + 1)}
+                    >
+                      Next step →
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <ProjectOutputTerminal onRunLive={runLiveFromDemo} />
       <p className={styles.githubCtaHint} style={{ marginTop: 16 }}>
         {COPY.project.saveForeverHint}
@@ -385,8 +473,8 @@ export default function FoundationProject() {
         <button
           type="button"
           className="btn btn-primary"
-          onClick={() => {
-            markProjectDone(unitId);
+          onClick={async () => {
+            await markProjectDone(unitId);
             window.location.assign("#/foundation");
           }}
         >
