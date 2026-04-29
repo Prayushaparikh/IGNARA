@@ -11,17 +11,17 @@
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
     "@vercel/analytics": "^2.0.1",
+    "@vitejs/plugin-react": "^4.2.1",
     "axios": "^1.6.2",
     "framer-motion": "^10.16.16",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.1",
     "recharts": "^2.10.3",
+    "vite": "^5.0.10",
     "zustand": "^4.4.7"
   },
   "devDependencies": {
-    "@types/react": "^18.2.46",
-    "@vitejs/plugin-react": "^4.2.1",
-    "vite": "^5.0.10"
+    "@types/react": "^18.2.46"
   }
 }
