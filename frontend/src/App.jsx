@@ -49,7 +49,7 @@ export default function App() {
         <Route path="/challenges/:id"    element={<PrivateRoute><Compiler /></PrivateRoute>} />
         <Route path="/projects"          element={<PrivateRoute><Projects /></PrivateRoute>} />
         <Route path="/roadmap" element={<PrivateRoute><Roadmap /></PrivateRoute>} />
-        <Route path="/lessons" element={<PrivateRoute><Navigate to="/foundation/b1/lesson" replace /></PrivateRoute>} />
+        <Route path="/lessons" element={<PrivateRoute><Lessons /></PrivateRoute>} />
         <Route path="/foundation" element={<PrivateRoute><FoundationOverview /></PrivateRoute>} />
         <Route path="/foundation/:unitId/lesson" element={<PrivateRoute><FoundationLessonIndex /></PrivateRoute>} />
         <Route path="/foundation/:unitId/lesson/:part" element={<PrivateRoute><FoundationLesson /></PrivateRoute>} />

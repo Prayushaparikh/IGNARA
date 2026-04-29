@@ -28,4 +28,4 @@ services:
         generateValue: true
       # Quote the URL list so `https://` does not confuse YAML parsers (can break Blueprint sync).
       - key: CLIENT_URL
-        value: "https://frontend-five-livid-15.vercel.app,https://frontend-bhm7tbqtz-prayushaparikh2020-9565s-projects.vercel.app"
+        value: "https://ignara.vercel.app,https://ignaracodex.com,https://www.ignaracodex.com"
